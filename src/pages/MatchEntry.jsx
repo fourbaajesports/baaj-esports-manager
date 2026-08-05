@@ -14,19 +14,24 @@ function MatchEntry() {
     teamKills: "",
   });
 
-  const [playerKills, setPlayerKills] = useState({});
+  const [playerStats, setPlayerStats] = useState({});
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleKillChange = (playerId, value) => {
-    setPlayerKills((prev) => ({
+  const updatePlayer = (id, field, value) => {
+    setPlayerStats((prev) => ({
       ...prev,
-      [playerId]: Number(value),
+      [id]: {
+        ...prev[id],
+        [field]: value,
+      },
     }));
   };
 
@@ -37,9 +42,62 @@ function MatchEntry() {
       !form.placement ||
       !form.teamKills
     ) {
-      alert("Please fill all fields");
+      alert("Please fill all fields.");
       return;
     }
+
+    const roomPlayers = players.filter(
+      (player) => playerStats[player.id]?.roomJoin
+    );
+
+    if (roomPlayers.length !== 4) {
+      alert("Exactly 4 players must be selected for Room Join.");
+      return;
+    }
+
+    let totalKills = 0;
+
+    for (const player of players) {
+      const stats = playerStats[player.id] || {};
+
+      const kills = Number(stats.kills || 0);
+
+      if (!stats.roomJoin && kills > 0) {
+        alert(
+          `${player.name} has kills but is not marked as Room Join.`
+        );
+        return;
+      }
+
+      totalKills += kills;
+    }
+
+    if (totalKills !== Number(form.teamKills)) {
+      alert(
+        `Player kills (${totalKills}) do not match Team Kills (${form.teamKills}).`
+      );
+      return;
+    }
+
+    const finalPlayerStats = {};
+
+    players.forEach((player) => {
+      const stats = playerStats[player.id] || {};
+
+      const roomJoin = !!stats.roomJoin;
+
+      finalPlayerStats[player.id] = {
+        kills: Number(stats.kills || 0),
+
+        roomJoin,
+
+        chicken:
+          roomJoin &&
+          Number(form.placement) === 1,
+
+        penalty: !!stats.penalty,
+      };
+    });
 
     const newMatch = {
       id: Date.now(),
@@ -48,29 +106,27 @@ function MatchEntry() {
       placement: Number(form.placement),
       teamKills: Number(form.teamKills),
       date: new Date().toLocaleDateString(),
-      playerKills,
+      playerStats: finalPlayerStats,
     };
 
     addMatch(newMatch);
 
-    alert("✅ Match Saved");
+    alert("✅ Match Saved Successfully");
 
     navigate("/history");
   };
 
-  return (
-    <div className="p-8 text-white">
-
+  return (    <div className="p-8 text-white">
       <h1 className="mb-8 text-4xl font-bold text-yellow-400">
         🎮 Add Match
       </h1>
 
-      <div className="max-w-3xl rounded-2xl bg-slate-800 p-8">
+      <div className="max-w-5xl rounded-2xl bg-slate-800 p-8">
 
-        <div className="space-y-5">
+        <div className="grid grid-cols-2 gap-5">
 
           <input
-            className="w-full rounded-lg bg-slate-700 p-3"
+            className="rounded-lg bg-slate-700 p-3"
             placeholder="Tournament Name"
             name="tournament"
             value={form.tournament}
@@ -78,7 +134,7 @@ function MatchEntry() {
           />
 
           <input
-            className="w-full rounded-lg bg-slate-700 p-3"
+            className="rounded-lg bg-slate-700 p-3"
             placeholder="Map"
             name="map"
             value={form.map}
@@ -87,7 +143,7 @@ function MatchEntry() {
 
           <input
             type="number"
-            className="w-full rounded-lg bg-slate-700 p-3"
+            className="rounded-lg bg-slate-700 p-3"
             placeholder="Placement"
             name="placement"
             value={form.placement}
@@ -96,7 +152,7 @@ function MatchEntry() {
 
           <input
             type="number"
-            className="w-full rounded-lg bg-slate-700 p-3"
+            className="rounded-lg bg-slate-700 p-3"
             placeholder="Team Kills"
             name="teamKills"
             value={form.teamKills}
@@ -105,45 +161,139 @@ function MatchEntry() {
 
         </div>
 
-        <div className="mt-8">
+        <div className="mt-10">
 
-          <h2 className="mb-4 text-2xl font-bold text-yellow-400">
-            👥 Player Kills
+          <h2 className="mb-5 text-2xl font-bold text-yellow-400">
+            👥 Player Performance
           </h2>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
 
-            {players.map((player) => (
+            {players.map((player) => {
 
-              <div
-                key={player.id}
-                className="flex items-center justify-between rounded-lg bg-slate-700 p-3"
-              >
+              const roomJoinCount = players.filter(
+                (p) => playerStats[p.id]?.roomJoin
+              ).length;
 
-                <div>
-                  <p className="font-semibold">
-                    {player.name}
-                  </p>
+              const selected =
+                playerStats[player.id]?.roomJoin || false;
 
-                  <p className="text-sm text-gray-400">
-                    {player.role}
-                  </p>
+              return (
+
+                <div
+                  key={player.id}
+                  className="rounded-xl bg-slate-700 p-4"
+                >
+
+                  <div className="flex justify-between items-center">
+
+                    <div>
+
+                      <h3 className="text-lg font-bold">
+                        {player.name}
+                      </h3>
+
+                      <p className="text-sm text-gray-400">
+                        {player.role}
+                      </p>
+
+                    </div>
+
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Kills"
+                      value={
+                        playerStats[player.id]?.kills || ""
+                      }
+                      onChange={(e) =>
+                        updatePlayer(
+                          player.id,
+                          "kills",
+                          Number(e.target.value)
+                        )
+                      }
+                      className="w-24 rounded-lg bg-slate-900 p-2 text-center"
+                    />
+
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-6">
+
+                    <label className="flex items-center gap-2">
+
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={(e) => {
+
+                          if (
+                            e.target.checked &&
+                            roomJoinCount >= 4
+                          ) {
+                            alert(
+                              "Only 4 players can Room Join."
+                            );
+                            return;
+                          }
+
+                          updatePlayer(
+                            player.id,
+                            "roomJoin",
+                            e.target.checked
+                          );
+                        }}
+                      />
+
+                      Room Join
+
+                    </label>
+
+                    <label className="flex items-center gap-2">
+
+                      <input
+                        type="checkbox"
+                        checked={
+                          Number(form.placement) === 1
+                            ? selected
+                            : playerStats[player.id]?.chicken ||
+                              false
+                        }
+                        disabled
+                      />
+
+                      🏆 Chicken
+
+                    </label>
+
+                    <label className="flex items-center gap-2">
+
+                      <input
+                        type="checkbox"
+                        checked={
+                          playerStats[player.id]?.penalty ||
+                          false
+                        }
+                        onChange={(e) =>
+                          updatePlayer(
+                            player.id,
+                            "penalty",
+                            e.target.checked
+                          )
+                        }
+                      />
+
+                      ❌ No Notice Penalty
+
+                    </label>
+
+                  </div>
+
                 </div>
 
-                <input
-                  type="number"
-                  min="0"
-                  value={playerKills[player.id] || ""}
-                  onChange={(e) =>
-                    handleKillChange(player.id, e.target.value)
-                  }
-                  className="w-24 rounded-lg bg-slate-900 p-2 text-center"
-                  placeholder="0"
-                />
+              );
 
-              </div>
-
-            ))}
+            })}
 
           </div>
 

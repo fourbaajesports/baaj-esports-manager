@@ -1,12 +1,15 @@
+import { useContext } from "react";
 import {
   FaHome,
   FaUsers,
   FaGamepad,
   FaChartBar,
   FaTrophy,
-  FaCog,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+
+import { AuthContext } from "../context/AuthContext";
 
 const linkStyle = {
   display: "flex",
@@ -20,6 +23,8 @@ const linkStyle = {
 };
 
 function Sidebar() {
+  const { user, logout, isCoach } = useContext(AuthContext);
+
   return (
     <div
       style={{
@@ -28,6 +33,8 @@ function Sidebar() {
         color: "white",
         height: "100vh",
         padding: "20px",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <h2 style={{ marginBottom: "30px" }}>🦅 4 Baaj</h2>
@@ -52,15 +59,17 @@ function Sidebar() {
         <FaUsers /> Players
       </NavLink>
 
-      <NavLink
-        to="/matches"
-        style={({ isActive }) => ({
-          ...linkStyle,
-          background: isActive ? "#374151" : "transparent",
-        })}
-      >
-        <FaGamepad /> Add Match
-      </NavLink>
+      {isCoach && (
+        <NavLink
+          to="/matches"
+          style={({ isActive }) => ({
+            ...linkStyle,
+            background: isActive ? "#374151" : "transparent",
+          })}
+        >
+          <FaGamepad /> Add Match
+        </NavLink>
+      )}
 
       <NavLink
         to="/history"
@@ -92,14 +101,40 @@ function Sidebar() {
         <FaChartBar /> Analytics
       </NavLink>
 
-      <div
-        style={{
-          ...linkStyle,
-          opacity: 0.5,
-          marginTop: "30px",
-        }}
-      >
-        <FaCog /> Settings
+      {/* Bottom Section */}
+      <div style={{ marginTop: "auto" }}>
+        <hr style={{ borderColor: "#374151", marginBottom: "15px" }} />
+
+        <p
+          style={{
+            fontSize: "13px",
+            color: "#9CA3AF",
+            marginBottom: "12px",
+            wordBreak: "break-word",
+          }}
+        >
+          {user?.email}
+        </p>
+
+        <button
+          onClick={logout}
+          style={{
+            width: "100%",
+            background: "#DC2626",
+            color: "white",
+            border: "none",
+            padding: "12px",
+            borderRadius: "8px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+          }}
+        >
+          <FaSignOutAlt />
+          Logout
+        </button>
       </div>
     </div>
   );

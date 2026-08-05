@@ -38,22 +38,48 @@ function Matches() {
                 <hr className="my-5 border-slate-700" />
 
                 <h3 className="mb-3 text-xl font-semibold">
-                  👥 Player Kills
+                  👥 Player Performance
                 </h3>
 
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  {players.map((player) => (
-                    <div
-                      key={player.id}
-                      className="flex justify-between rounded-lg bg-slate-700 p-3"
-                    >
-                      <span>{player.name}</span>
+                  {players.map((player) => {
+                    const stats =
+                      match.playerStats?.[player.id] || {};
 
-                      <span className="font-bold text-yellow-400">
-                        {match.playerKills[player.id] || 0}
-                      </span>
-                    </div>
-                  ))}
+                    return (
+                      <div
+                        key={player.id}
+                        className="rounded-lg bg-slate-700 p-3"
+                      >
+                        <div className="flex justify-between">
+                          <span>{player.name}</span>
+
+                          <span className="font-bold text-yellow-400">
+                            {stats.kills || 0} Kills
+                          </span>
+                        </div>
+
+                        <div className="mt-2 text-sm text-gray-300 space-y-1">
+
+                          <p>
+                            Room Join :{" "}
+                            {stats.roomJoin ? "✅" : "❌"}
+                          </p>
+
+                          <p>
+                            Chicken :{" "}
+                            {stats.chicken ? "🏆" : "—"}
+                          </p>
+
+                          <p>
+                            Penalty :{" "}
+                            {stats.penalty ? "❌ Yes" : "No"}
+                          </p>
+
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
