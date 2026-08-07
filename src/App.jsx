@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -24,29 +24,40 @@ import Analytics from "./pages/Analytics";
 function App() {
   const { user, isCoach } = useContext(AuthContext);
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   if (!user) {
     return <Login />;
   }
 
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen bg-slate-950">
+      <div className="flex min-h-screen bg-slate-900">
 
-        {/* Sidebar */}
-        <Sidebar />
+        <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
 
-        {/* Main Content */}
-        <main className="flex flex-1 flex-col overflow-hidden">
+        <main className="min-w-0 flex-1">
 
-          <Navbar />
+          <Navbar
+            setSidebarOpen={setSidebarOpen}
+          />
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="overflow-y-auto p-4 md:p-6">
 
             <Routes>
 
-              <Route path="/" element={<Dashboard />} />
+              <Route
+                path="/"
+                element={<Dashboard />}
+              />
 
-              <Route path="/players" element={<Players />} />
+              <Route
+                path="/players"
+                element={<Players />}
+              />
 
               <Route
                 path="/players/:id"
@@ -59,7 +70,10 @@ function App() {
                   isCoach ? (
                     <MatchEntry />
                   ) : (
-                    <Navigate to="/" replace />
+                    <Navigate
+                      to="/"
+                      replace
+                    />
                   )
                 }
               />
@@ -70,7 +84,10 @@ function App() {
                   isCoach ? (
                     <MatchEntry />
                   ) : (
-                    <Navigate to="/" replace />
+                    <Navigate
+                      to="/"
+                      replace
+                    />
                   )
                 }
               />

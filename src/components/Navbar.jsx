@@ -1,30 +1,39 @@
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { FaBars } from "react-icons/fa";
 
-function Navbar() {
-  const { user, isCoach } = useContext(AuthContext);
-
+function Navbar({ setSidebarOpen }) {
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-700 bg-slate-900/90 px-8 py-5 backdrop-blur">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-700 bg-slate-900 px-4 md:px-6">
 
-      <div>
-        <h1 className="text-2xl font-bold text-white">
-          {isCoach ? "👑 Coach Dashboard" : "🎮 Player Dashboard"}
-        </h1>
+      {/* Left Side */}
+      <div className="flex items-center gap-4">
 
-        <p className="mt-1 text-sm text-gray-400">
-          Welcome back to 4 Baaj Esports Manager
-        </p>
+        {/* Mobile Menu */}
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="rounded-lg p-2 text-white transition hover:bg-slate-700 lg:hidden"
+        >
+          <FaBars size={20} />
+        </button>
+
+        <div>
+          <h1 className="text-lg font-bold text-white md:text-2xl">
+            Coach Dashboard 👑
+          </h1>
+
+          <p className="hidden text-sm text-gray-400 md:block">
+            Welcome back to 4 Baaj Esports Manager
+          </p>
+        </div>
+
       </div>
 
-      <div className="hidden rounded-xl border border-slate-700 bg-slate-800 px-5 py-3 md:block">
-        <p className="text-xs uppercase tracking-wider text-gray-500">
-          Logged In
-        </p>
+      {/* Right Side */}
+      <div className="hidden items-center gap-3 md:flex">
 
-        <p className="max-w-[250px] truncate text-sm text-white">
-          {user?.email}
-        </p>
+        <div className="rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-black">
+          ONLINE
+        </div>
+
       </div>
 
     </header>

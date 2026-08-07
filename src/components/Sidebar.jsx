@@ -6,12 +6,13 @@ import {
   FaChartBar,
   FaTrophy,
   FaSignOutAlt,
+  FaTimes,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
 
-function Sidebar() {
+function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const { user, logout, isCoach } = useContext(AuthContext);
 
   const navClass = ({ isActive }) =>
@@ -22,75 +23,128 @@ function Sidebar() {
     }`;
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-slate-700 bg-slate-900 p-5">
+    <>
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-extrabold text-yellow-400">
-          🦅 4 Baaj
-        </h1>
+      {/* Sidebar */}
+      <aside
+        className={`fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-slate-700 bg-slate-900 p-5 transition-transform duration-300 lg:static lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Mobile Close Button */}
+        <div className="mb-6 flex items-center justify-between lg:hidden">
+          <h1 className="text-xl font-bold text-yellow-400">
+            🦅 4 Baaj
+          </h1>
 
-        <p className="mt-1 text-sm text-gray-400">
-          Esports Manager
-        </p>
-      </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="text-2xl text-white"
+          >
+            <FaTimes />
+          </button>
+        </div>
 
-      <nav className="space-y-2">
+        {/* Desktop Logo */}
+        <div className="mb-8 hidden lg:block">
+          <h1 className="text-2xl font-extrabold text-yellow-400">
+            🦅 4 Baaj
+          </h1>
 
-        <NavLink to="/" className={navClass}>
-          <FaHome />
-          Dashboard
-        </NavLink>
+          <p className="mt-1 text-sm text-gray-400">
+            Esports Manager
+          </p>
+        </div>
 
-        <NavLink to="/players" className={navClass}>
-          <FaUsers />
-          Players
-        </NavLink>
+        <nav className="space-y-2">
 
-        {isCoach && (
-          <NavLink to="/matches" className={navClass}>
-            <FaGamepad />
-            Add Match
+          <NavLink
+            to="/"
+            className={navClass}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaHome />
+            Dashboard
           </NavLink>
-        )}
 
-        <NavLink to="/history" className={navClass}>
-          <FaGamepad />
-          Match History
-        </NavLink>
+          <NavLink
+            to="/players"
+            className={navClass}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaUsers />
+            Players
+          </NavLink>
 
-        <NavLink to="/leaderboard" className={navClass}>
-          <FaTrophy />
-          Leaderboard
-        </NavLink>
+          {isCoach && (
+            <NavLink
+              to="/matches"
+              className={navClass}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <FaGamepad />
+              Add Match
+            </NavLink>
+          )}
 
-        <NavLink to="/analytics" className={navClass}>
-          <FaChartBar />
-          Analytics
-        </NavLink>
+          <NavLink
+            to="/history"
+            className={navClass}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaGamepad />
+            Match History
+          </NavLink>
 
-      </nav>
+          <NavLink
+            to="/leaderboard"
+            className={navClass}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaTrophy />
+            Leaderboard
+          </NavLink>
 
-      <div className="mt-auto rounded-xl border border-slate-700 bg-slate-800 p-4">
+          <NavLink
+            to="/analytics"
+            className={navClass}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaChartBar />
+            Analytics
+          </NavLink>
 
-        <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">
-          Logged in as
-        </p>
+        </nav>
 
-        <p className="truncate text-sm text-gray-300">
-          {user?.email}
-        </p>
+        <div className="mt-auto rounded-xl border border-slate-700 bg-slate-800 p-4">
 
-        <button
-          onClick={logout}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-red-500"
-        >
-          <FaSignOutAlt />
-          Logout
-        </button>
+          <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">
+            Logged in as
+          </p>
 
-      </div>
+          <p className="truncate text-sm text-gray-300">
+            {user?.email}
+          </p>
 
-    </aside>
+          <button
+            onClick={logout}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 font-semibold transition-all duration-300 hover:bg-red-500"
+          >
+            <FaSignOutAlt />
+            Logout
+          </button>
+
+        </div>
+
+      </aside>
+    </>
   );
 }
 

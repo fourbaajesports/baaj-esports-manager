@@ -6,13 +6,11 @@ function Leaderboard() {
 
   const [tab, setTab] = useState("kills");
 
-  const sortedPlayers = [...players].sort((a, b) => {
-    if (tab === "kills") {
-      return b.totalKills - a.totalKills;
-    }
-
-    return b.performancePoints - a.performancePoints;
-  });
+  const sortedPlayers = [...players].sort((a, b) =>
+    tab === "kills"
+      ? b.totalKills - a.totalKills
+      : b.performancePoints - a.performancePoints
+  );
 
   const medal = (index) => {
     if (index === 0) return "🥇";
@@ -22,20 +20,30 @@ function Leaderboard() {
   };
 
   return (
-    <div className="p-8 text-white">
+    <div className="space-y-6">
 
-      <h1 className="mb-8 text-4xl font-bold text-yellow-400">
-        🏆 Leaderboard
-      </h1>
+      <div>
 
-      <div className="mb-8 flex gap-4">
+        <h1 className="text-3xl font-bold text-yellow-400">
+          🏆 Leaderboard
+        </h1>
+
+        <p className="mt-2 text-gray-400">
+          Top performing players of 4 Baaj Esports.
+        </p>
+
+      </div>
+
+      {/* Tabs */}
+
+      <div className="flex flex-wrap gap-3">
 
         <button
           onClick={() => setTab("kills")}
-          className={`rounded-lg px-6 py-3 font-bold ${
+          className={`rounded-xl px-6 py-3 font-bold transition ${
             tab === "kills"
               ? "bg-yellow-500 text-black"
-              : "bg-slate-700"
+              : "bg-slate-700 text-white hover:bg-slate-600"
           }`}
         >
           🔥 Kill Leaderboard
@@ -43,10 +51,10 @@ function Leaderboard() {
 
         <button
           onClick={() => setTab("performance")}
-          className={`rounded-lg px-6 py-3 font-bold ${
+          className={`rounded-xl px-6 py-3 font-bold transition ${
             tab === "performance"
               ? "bg-yellow-500 text-black"
-              : "bg-slate-700"
+              : "bg-slate-700 text-white hover:bg-slate-600"
           }`}
         >
           ⭐ Performance
@@ -54,24 +62,26 @@ function Leaderboard() {
 
       </div>
 
+      {/* Players */}
+
       <div className="space-y-4">
 
         {sortedPlayers.map((player, index) => (
 
           <div
             key={player.id}
-            className="flex items-center justify-between rounded-xl bg-slate-800 p-5"
+            className="flex flex-col gap-4 rounded-2xl border border-slate-700 bg-slate-800 p-5 shadow-lg transition hover:border-yellow-400 md:flex-row md:items-center md:justify-between"
           >
 
             <div className="flex items-center gap-5">
 
-              <div className="text-3xl">
+              <div className="text-4xl">
                 {medal(index)}
               </div>
 
               <div>
 
-                <h2 className="text-xl font-bold">
+                <h2 className="text-xl font-bold text-yellow-400">
                   {player.name}
                 </h2>
 
@@ -79,29 +89,51 @@ function Leaderboard() {
                   {player.role}
                 </p>
 
+                <p className="text-sm text-gray-500">
+                  {player.ign}
+                </p>
+
               </div>
 
             </div>
 
-            <div className="text-right">
+            <div className="grid grid-cols-2 gap-6 text-center md:flex md:gap-10">
 
-              {tab === "kills" ? (
-                <>
-                  <p className="text-3xl font-bold text-yellow-400">
-                    {player.totalKills}
-                  </p>
+              <div>
 
-                  <p>Total Kills</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-3xl font-bold text-yellow-400">
-                    {player.performancePoints}
-                  </p>
+                <p className="text-xs text-gray-400">
+                  Matches
+                </p>
 
-                  <p>Performance</p>
-                </>
-              )}
+                <p className="text-xl font-bold">
+                  {player.matchesPlayed}
+                </p>
+
+              </div>
+
+              <div>
+
+                <p className="text-xs text-gray-400">
+                  Kills
+                </p>
+
+                <p className="text-xl font-bold text-yellow-400">
+                  {player.totalKills}
+                </p>
+
+              </div>
+
+              <div>
+
+                <p className="text-xs text-gray-400">
+                  Performance
+                </p>
+
+                <p className="text-xl font-bold text-yellow-400">
+                  {player.performancePoints}
+                </p>
+
+              </div>
 
             </div>
 

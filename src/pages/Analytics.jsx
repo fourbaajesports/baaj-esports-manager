@@ -19,9 +19,9 @@ import { MatchContext } from "../context/MatchContext";
 function Analytics() {
   const { matches, players } = useContext(MatchContext);
 
-  // -----------------------------
+  // ==========================
   // Team Stats
-  // -----------------------------
+  // ==========================
 
   const totalMatches = matches.length;
 
@@ -31,7 +31,8 @@ function Analytics() {
   );
 
   const totalPerformance = players.reduce(
-    (sum, player) => sum + Number(player.performancePoints || 0),
+    (sum, player) =>
+      sum + Number(player.performancePoints || 0),
     0
   );
 
@@ -57,22 +58,30 @@ function Analytics() {
   const chickenRate =
     totalMatches === 0
       ? 0
-      : ((chickenCount / totalMatches) * 100).toFixed(1);
+      : (
+          (chickenCount / totalMatches) *
+          100
+        ).toFixed(1);
 
   const top8Rate =
     totalMatches === 0
       ? 0
-      : ((top8Count / totalMatches) * 100).toFixed(1);
+      : (
+          (top8Count / totalMatches) *
+          100
+        ).toFixed(1);
 
-  // -----------------------------
+  // ==========================
   // Charts
-  // -----------------------------
+  // ==========================
 
-  const matchChart = matches.map((match, index) => ({
-    match: `M${index + 1}`,
-    kills: Number(match.teamKills),
-    placement: Number(match.placement),
-  }));
+  const matchChart = matches.map(
+    (match, index) => ({
+      match: `M${index + 1}`,
+      kills: Number(match.teamKills),
+      placement: Number(match.placement),
+    })
+  );
 
   const pieData = players.map((player) => ({
     name: player.name,
@@ -85,11 +94,9 @@ function Analytics() {
     "#22c55e",
     "#ef4444",
     "#8b5cf6",
-  ];
-
-  // -----------------------------
-  // Records
-  // -----------------------------
+  ];  // ==========================
+  // Team Records
+  // ==========================
 
   const highestKillMatch =
     matches.length > 0
@@ -124,119 +131,181 @@ function Analytics() {
         b.top8Finishes - a.top8Finishes
     )[0];
 
-  return (    <div className="p-8 text-white">
+  return (
 
-      <h1 className="mb-8 text-4xl font-bold text-yellow-400">
-        📊 Team Analytics
-      </h1>
+    <div className="space-y-8">
+
+      {/* Header */}
+
+      <div>
+
+        <h1 className="text-3xl font-bold text-yellow-400">
+          📊 Team Analytics
+        </h1>
+
+        <p className="mt-2 text-gray-400">
+          Complete statistics of your BGMI team.
+        </p>
+
+      </div>
 
       {/* Top Cards */}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
 
-        <div className="rounded-xl bg-slate-800 p-6">
-          <h3 className="text-gray-400">📅 Total Matches</h3>
-          <p className="mt-2 text-4xl font-bold">{totalMatches}</p>
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
+
+          <p className="text-gray-400">
+            📅 Total Matches
+          </p>
+
+          <h2 className="mt-3 text-4xl font-bold">
+            {totalMatches}
+          </h2>
+
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-6">
-          <h3 className="text-gray-400">🔥 Total Kills</h3>
-          <p className="mt-2 text-4xl font-bold text-yellow-400">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
+
+          <p className="text-gray-400">
+            🔥 Total Kills
+          </p>
+
+          <h2 className="mt-3 text-4xl font-bold text-yellow-400">
             {totalKills}
-          </p>
+          </h2>
+
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-6">
-          <h3 className="text-gray-400">⭐ Team Performance</h3>
-          <p className="mt-2 text-4xl font-bold text-green-400">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
+
+          <p className="text-gray-400">
+            ⭐ Team Performance
+          </p>
+
+          <h2 className="mt-3 text-4xl font-bold text-green-400">
             {totalPerformance}
-          </p>
+          </h2>
+
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-6">
-          <h3 className="text-gray-400">🏆 Chicken Rate</h3>
-          <p className="mt-2 text-4xl font-bold">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
+
+          <p className="text-gray-400">
+            🏆 Chicken Rate
+          </p>
+
+          <h2 className="mt-3 text-4xl font-bold">
             {chickenRate}%
-          </p>
+          </h2>
+
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-6">
-          <h3 className="text-gray-400">🎯 Top 8 Rate</h3>
-          <p className="mt-2 text-4xl font-bold">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
+
+          <p className="text-gray-400">
+            🎯 Top 8 Rate
+          </p>
+
+          <h2 className="mt-3 text-4xl font-bold">
             {top8Rate}%
-          </p>
+          </h2>
+
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-6">
-          <h3 className="text-gray-400">📍 Avg Placement</h3>
-          <p className="mt-2 text-4xl font-bold">
-            {averagePlacement}
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
+
+          <p className="text-gray-400">
+            📍 Avg Placement
           </p>
+
+          <h2 className="mt-3 text-4xl font-bold">
+            {averagePlacement}
+          </h2>
+
         </div>
 
       </div>
 
       {/* Charts */}
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2">
 
-        <div className="rounded-xl bg-slate-800 p-6">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
 
           <h2 className="mb-5 text-xl font-bold text-yellow-400">
             📈 Kills Per Match
           </h2>
 
           <ResponsiveContainer width="100%" height={300}>
+
             <LineChart data={matchChart}>
+
               <CartesianGrid strokeDasharray="3 3" />
+
               <XAxis dataKey="match" />
+
               <YAxis />
+
               <Tooltip />
+
               <Line
                 type="monotone"
                 dataKey="kills"
                 stroke="#facc15"
                 strokeWidth={3}
               />
+
             </LineChart>
+
           </ResponsiveContainer>
 
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-6">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
 
           <h2 className="mb-5 text-xl font-bold text-yellow-400">
             📊 Placement Trend
           </h2>
 
           <ResponsiveContainer width="100%" height={300}>
+
             <BarChart data={matchChart}>
+
               <CartesianGrid strokeDasharray="3 3" />
+
               <XAxis dataKey="match" />
+
               <YAxis reversed />
+
               <Tooltip />
+
               <Bar
                 dataKey="placement"
                 fill="#3b82f6"
               />
+
             </BarChart>
+
           </ResponsiveContainer>
 
         </div>
 
       </div>
+            {/* Bottom Section */}
 
-      {/* Pie + Records */}
+      <div className="grid gap-6 xl:grid-cols-2">
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
+        {/* Kill Contribution */}
 
-        <div className="rounded-xl bg-slate-800 p-6">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
 
           <h2 className="mb-5 text-xl font-bold text-yellow-400">
             🥧 Kill Contribution
           </h2>
 
           <ResponsiveContainer width="100%" height={350}>
+
             <PieChart>
 
               <Pie
@@ -246,24 +315,31 @@ function Analytics() {
                 outerRadius={120}
                 label
               >
+
                 {pieData.map((entry, index) => (
+
                   <Cell
                     key={index}
                     fill={
                       COLORS[index % COLORS.length]
                     }
                   />
+
                 ))}
+
               </Pie>
 
               <Tooltip />
 
             </PieChart>
+
           </ResponsiveContainer>
 
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-6">
+        {/* Team Records */}
+
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
 
           <h2 className="mb-5 text-xl font-bold text-yellow-400">
             🏅 Team Records
@@ -271,51 +347,66 @@ function Analytics() {
 
           <div className="space-y-4">
 
-            <div className="rounded-lg bg-slate-700 p-4">
+            <div className="rounded-xl border border-slate-600 bg-slate-700 p-4">
+
               <p className="text-gray-400">
                 Highest Kill Match
               </p>
-              <p className="font-bold">
+
+              <p className="mt-1 text-lg font-bold">
                 {highestKillMatch
                   ? `${highestKillMatch.teamKills} Kills`
                   : "-"}
               </p>
+
             </div>
 
-            <div className="rounded-lg bg-slate-700 p-4">
+            <div className="rounded-xl border border-slate-600 bg-slate-700 p-4">
+
               <p className="text-gray-400">
                 Top Killer
               </p>
-              <p className="font-bold">
+
+              <p className="mt-1 text-lg font-bold text-yellow-400">
                 {topKiller?.name || "-"}
               </p>
+
             </div>
 
-            <div className="rounded-lg bg-slate-700 p-4">
+            <div className="rounded-xl border border-slate-600 bg-slate-700 p-4">
+
               <p className="text-gray-400">
                 Best Performer
               </p>
-              <p className="font-bold">
+
+              <p className="mt-1 text-lg font-bold text-green-400">
                 {topPerformer?.name || "-"}
               </p>
+
             </div>
 
-            <div className="rounded-lg bg-slate-700 p-4">
+            <div className="rounded-xl border border-slate-600 bg-slate-700 p-4">
+
               <p className="text-gray-400">
-                Most Chicken
+                Most Chicken Dinners
               </p>
-              <p className="font-bold">
+
+              <p className="mt-1 text-lg font-bold">
                 {mostChicken?.name || "-"}
               </p>
+
             </div>
 
-            <div className="rounded-lg bg-slate-700 p-4">
+            <div className="rounded-xl border border-slate-600 bg-slate-700 p-4">
+
               <p className="text-gray-400">
-                Most Top 8
+                Most Top 8 Finishes
               </p>
-              <p className="font-bold">
+
+              <p className="mt-1 text-lg font-bold">
                 {mostTop8?.name || "-"}
               </p>
+
             </div>
 
           </div>
