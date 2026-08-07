@@ -1,22 +1,33 @@
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+
 function Navbar() {
+  const { user, isCoach } = useContext(AuthContext);
+
   return (
-    <nav
-      style={{
-        background: "#111827",
-        color: "white",
-        padding: "18px 30px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        borderBottom: "1px solid #374151",
-      }}
-    >
-      <h2>🦅 4 Baaj Esports Manager</h2>
+    <header className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-700 bg-slate-900/90 px-8 py-5 backdrop-blur">
 
       <div>
-        <strong>Coach Panel</strong>
+        <h1 className="text-2xl font-bold text-white">
+          {isCoach ? "👑 Coach Dashboard" : "🎮 Player Dashboard"}
+        </h1>
+
+        <p className="mt-1 text-sm text-gray-400">
+          Welcome back to 4 Baaj Esports Manager
+        </p>
       </div>
-    </nav>
+
+      <div className="hidden rounded-xl border border-slate-700 bg-slate-800 px-5 py-3 md:block">
+        <p className="text-xs uppercase tracking-wider text-gray-500">
+          Logged In
+        </p>
+
+        <p className="max-w-[250px] truncate text-sm text-white">
+          {user?.email}
+        </p>
+      </div>
+
+    </header>
   );
 }
 

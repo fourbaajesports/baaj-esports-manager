@@ -5,9 +5,9 @@ import { MatchContext } from "../context/MatchContext";
 function Dashboard() {
   const { matches, players } = useContext(MatchContext);
 
-  // --------------------------
+  // ==========================
   // Basic Stats
-  // --------------------------
+  // ==========================
 
   const totalMatches = matches.length;
 
@@ -35,46 +35,54 @@ function Dashboard() {
           ) / totalMatches
         ).toFixed(2);
 
-  // --------------------------
+  // ==========================
   // MVP
-  // --------------------------
+  // ==========================
 
-  const currentMVP =
-    [...players].sort(
-      (a, b) => b.performancePoints - a.performancePoints
-    )[0];
+  const currentMVP = [...players].sort(
+    (a, b) => b.performancePoints - a.performancePoints
+  )[0];
 
-  // --------------------------
+  // ==========================
   // Leaderboards
-  // --------------------------
+  // ==========================
 
   const killLeaderboard = [...players]
     .sort((a, b) => b.totalKills - a.totalKills)
     .slice(0, 5);
 
   const performanceLeaderboard = [...players]
-    .sort(
-      (a, b) => b.performancePoints - a.performancePoints
-    )
+    .sort((a, b) => b.performancePoints - a.performancePoints)
     .slice(0, 5);
 
-  // --------------------------
+  // ==========================
   // Recent Matches
-  // --------------------------
+  // ==========================
 
   const recentMatches = [...matches]
     .reverse()
     .slice(0, 5);
 
-  return (    <div className="p-8 text-white">
+  return (
+    <div className="space-y-8 p-6 text-white md:p-8">
 
-      <h1 className="mb-8 text-4xl font-bold text-yellow-400">
-        🦅 4 Baaj Dashboard
-      </h1>
+      {/* Header */}
+
+      <div>
+
+        <h1 className="text-4xl font-extrabold text-yellow-400">
+          🦅 4 Baaj Dashboard
+        </h1>
+
+        <p className="mt-2 text-gray-400">
+          Welcome back, Coach. Here's your team's latest performance.
+        </p>
+
+      </div>
 
       {/* Top Cards */}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
 
         <StatCard
           title="📅 Total Matches"
@@ -103,37 +111,31 @@ function Dashboard() {
 
         <StatCard
           title="👑 Current MVP"
-          value={
-            currentMVP
-              ? currentMVP.name
-              : "-"
-          }
+          value={currentMVP ? currentMVP.name : "-"}
         />
 
       </div>
 
       {/* Bottom Grid */}
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 xl:grid-cols-3">
 
         {/* Kill Leaderboard */}
 
-        <div className="rounded-xl bg-slate-800 p-6">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400 hover:shadow-yellow-500/10">
 
           <h2 className="mb-5 text-2xl font-bold text-yellow-400">
             🔥 Kill Leaderboard
           </h2>
 
-          <div className="space-y-3">
-
-            {killLeaderboard.map((player, index) => (
+          <div className="space-y-3">            {killLeaderboard.map((player, index) => (
 
               <div
                 key={player.id}
-                className="flex justify-between rounded-lg bg-slate-700 p-3"
+                className="flex items-center justify-between rounded-xl bg-slate-700 p-4 transition-all duration-300 hover:bg-slate-600"
               >
 
-                <span>
+                <span className="font-medium">
 
                   {index === 0 && "🥇 "}
                   {index === 1 && "🥈 "}
@@ -158,10 +160,10 @@ function Dashboard() {
 
         {/* Performance Leaderboard */}
 
-        <div className="rounded-xl bg-slate-800 p-6">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400 hover:shadow-yellow-500/10">
 
           <h2 className="mb-5 text-2xl font-bold text-yellow-400">
-            ⭐ Performance
+            ⭐ Performance Leaderboard
           </h2>
 
           <div className="space-y-3">
@@ -170,10 +172,10 @@ function Dashboard() {
 
               <div
                 key={player.id}
-                className="flex justify-between rounded-lg bg-slate-700 p-3"
+                className="flex items-center justify-between rounded-xl bg-slate-700 p-4 transition-all duration-300 hover:bg-slate-600"
               >
 
-                <span>
+                <span className="font-medium">
 
                   {index === 0 && "🥇 "}
                   {index === 1 && "🥈 "}
@@ -194,11 +196,9 @@ function Dashboard() {
 
           </div>
 
-        </div>
+        </div>        {/* Recent Matches */}
 
-        {/* Recent Matches */}
-
-        <div className="rounded-xl bg-slate-800 p-6">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400 hover:shadow-yellow-500/10">
 
           <h2 className="mb-5 text-2xl font-bold text-yellow-400">
             🕒 Recent Matches
@@ -206,9 +206,9 @@ function Dashboard() {
 
           {recentMatches.length === 0 ? (
 
-            <p className="text-gray-400">
-              No Matches Yet
-            </p>
+            <div className="rounded-xl border border-dashed border-slate-600 p-6 text-center text-gray-400">
+              No matches have been played yet.
+            </div>
 
           ) : (
 
@@ -218,23 +218,23 @@ function Dashboard() {
 
                 <div
                   key={match.id}
-                  className="rounded-lg bg-slate-700 p-3"
+                  className="rounded-xl bg-slate-700 p-4 transition-all duration-300 hover:bg-slate-600"
                 >
 
-                  <h3 className="font-bold">
+                  <h3 className="font-bold text-yellow-400">
                     {match.tournament}
                   </h3>
 
-                  <p className="text-sm text-gray-300">
-                    🗺 {match.map}
+                  <p className="mt-1 text-sm text-gray-300">
+                    🗺️ {match.map}
                   </p>
 
                   <p className="text-sm">
-                    🏆 #{match.placement}
+                    🏆 Placement #{match.placement}
                   </p>
 
                   <p className="text-sm">
-                    🔥 {match.teamKills} Kills
+                    🔥 Team Kills: {match.teamKills}
                   </p>
 
                 </div>

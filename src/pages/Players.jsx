@@ -1,8 +1,10 @@
 import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { MatchContext } from "../context/MatchContext";
 
 function Players() {
   const { players } = useContext(MatchContext);
+  const navigate = useNavigate();
 
   return (
     <div className="p-8 text-white">
@@ -28,9 +30,10 @@ function Players() {
             {players.map((player) => (
               <tr
                 key={player.id}
-                className="border-t border-slate-700"
+                className="cursor-pointer border-t border-slate-700 transition hover:bg-slate-700"
+                onClick={() => navigate(`/players/${player.id}`)}
               >
-                <td className="p-4 font-semibold">
+                <td className="p-4 font-semibold text-yellow-400">
                   {player.name}
                 </td>
 
@@ -52,6 +55,10 @@ function Players() {
           </tbody>
         </table>
       </div>
+
+      <p className="mt-4 text-sm text-gray-400">
+        💡 Click on any player to view detailed statistics.
+      </p>
     </div>
   );
 }

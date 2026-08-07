@@ -15,6 +15,7 @@ import Sidebar from "./components/Sidebar";
 
 import Dashboard from "./pages/Dashboard";
 import Players from "./pages/Players";
+import PlayerDetails from "./pages/PlayerDetails";
 import MatchEntry from "./pages/MatchEntry";
 import Matches from "./pages/Matches";
 import Leaderboard from "./pages/Leaderboard";
@@ -23,42 +24,78 @@ import Analytics from "./pages/Analytics";
 function App() {
   const { user, isCoach } = useContext(AuthContext);
 
-  // Login nahi hua
   if (!user) {
     return <Login />;
   }
 
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen bg-slate-950">
+
+        {/* Sidebar */}
         <Sidebar />
 
-        <div className="flex-1 bg-slate-900 text-white">
+        {/* Main Content */}
+        <main className="flex flex-1 flex-col overflow-hidden">
+
           <Navbar />
 
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
+          <div className="flex-1 overflow-y-auto p-6">
 
-            <Route path="/players" element={<Players />} />
+            <Routes>
 
-            <Route
-              path="/matches"
-              element={
-                isCoach ? (
-                  <MatchEntry />
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
+              <Route path="/" element={<Dashboard />} />
 
-            <Route path="/history" element={<Matches />} />
+              <Route path="/players" element={<Players />} />
 
-            <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route
+                path="/players/:id"
+                element={<PlayerDetails />}
+              />
 
-            <Route path="/analytics" element={<Analytics />} />
-          </Routes>
-        </div>
+              <Route
+                path="/matches"
+                element={
+                  isCoach ? (
+                    <MatchEntry />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/edit-match/:id"
+                element={
+                  isCoach ? (
+                    <MatchEntry />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/history"
+                element={<Matches />}
+              />
+
+              <Route
+                path="/leaderboard"
+                element={<Leaderboard />}
+              />
+
+              <Route
+                path="/analytics"
+                element={<Analytics />}
+              />
+
+            </Routes>
+
+          </div>
+
+        </main>
+
       </div>
     </BrowserRouter>
   );

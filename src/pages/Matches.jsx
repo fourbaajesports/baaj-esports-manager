@@ -1,8 +1,13 @@
 import { useContext } from "react";
 import { MatchContext } from "../context/MatchContext";
+import { AuthContext } from "../context/AuthContext";
+import { FaTrash, FaEdit } from "react-icons/fa";
 
 function Matches() {
-  const { matches, players } = useContext(MatchContext);
+  const { matches, players, deleteMatch } =
+    useContext(MatchContext);
+
+  const { isCoach } = useContext(AuthContext);
 
   return (
     <div className="p-8 text-white">
@@ -24,9 +29,35 @@ function Matches() {
                 key={match.id}
                 className="rounded-xl bg-slate-800 p-6"
               >
-                <h2 className="text-2xl font-bold text-yellow-400">
-                  {match.tournament}
-                </h2>
+                <div className="flex items-center justify-between">
+
+                  <h2 className="text-2xl font-bold text-yellow-400">
+                    {match.tournament}
+                  </h2>
+
+                  {isCoach && (
+                    <div className="flex gap-3">
+
+                      <button
+                        className="rounded-lg bg-blue-600 p-2 hover:bg-blue-500"
+                        onClick={() =>
+                          alert("Edit Match feature coming soon 🚀")
+                        }
+                      >
+                        <FaEdit />
+                      </button>
+
+                      <button
+                        className="rounded-lg bg-red-600 p-2 hover:bg-red-500"
+                        onClick={() => deleteMatch(match.id)}
+                      >
+                        <FaTrash />
+                      </button>
+
+                    </div>
+                  )}
+
+                </div>
 
                 <div className="mt-4 space-y-2">
                   <p>🗺️ Map : {match.map}</p>
@@ -59,7 +90,7 @@ function Matches() {
                           </span>
                         </div>
 
-                        <div className="mt-2 text-sm text-gray-300 space-y-1">
+                        <div className="mt-2 space-y-1 text-sm text-gray-300">
 
                           <p>
                             Room Join :{" "}
@@ -81,6 +112,7 @@ function Matches() {
                     );
                   })}
                 </div>
+
               </div>
             ))}
         </div>

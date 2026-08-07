@@ -3,7 +3,7 @@ const players = [
     id: 1,
     name: "Lucky",
     ign: "Team4BxLuckY",
-    role: "Secondary IGL",
+    role: " IGL",
 
     totalKills: 0,
     performancePoints: 0,
@@ -14,7 +14,7 @@ const players = [
     top8Finishes: 0,
     penalties: 0,
 
-    active: false,
+    active: true,
   },
 
   {
@@ -37,9 +37,9 @@ const players = [
 
   {
     id: 3,
-    name: "Ayush",
-    ign: "Team4BxAKi0",
-    role: "IGL",
+    name: "tryout",
+    ign: "tryout_01",
+    role: "tryout",
 
     totalKills: 0,
     performancePoints: 0,
@@ -50,7 +50,7 @@ const players = [
     top8Finishes: 0,
     penalties: 0,
 
-    active: true,
+    active: false,
   },
 
   {

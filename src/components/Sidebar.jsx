@@ -11,132 +11,86 @@ import { NavLink } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
 
-const linkStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  color: "white",
-  textDecoration: "none",
-  padding: "12px",
-  borderRadius: "8px",
-  marginBottom: "10px",
-};
-
 function Sidebar() {
   const { user, logout, isCoach } = useContext(AuthContext);
 
+  const navClass = ({ isActive }) =>
+    `flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300 ${
+      isActive
+        ? "bg-yellow-500 text-black font-semibold shadow-lg"
+        : "text-gray-300 hover:bg-slate-700 hover:text-white"
+    }`;
+
   return (
-    <div
-      style={{
-        width: "250px",
-        background: "#111827",
-        color: "white",
-        height: "100vh",
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <h2 style={{ marginBottom: "30px" }}>🦅 4 Baaj</h2>
+    <aside className="flex h-screen w-64 flex-col border-r border-slate-700 bg-slate-900 p-5">
 
-      <NavLink
-        to="/"
-        style={({ isActive }) => ({
-          ...linkStyle,
-          background: isActive ? "#374151" : "transparent",
-        })}
-      >
-        <FaHome /> Dashboard
-      </NavLink>
+      <div className="mb-8">
+        <h1 className="text-2xl font-extrabold text-yellow-400">
+          🦅 4 Baaj
+        </h1>
 
-      <NavLink
-        to="/players"
-        style={({ isActive }) => ({
-          ...linkStyle,
-          background: isActive ? "#374151" : "transparent",
-        })}
-      >
-        <FaUsers /> Players
-      </NavLink>
+        <p className="mt-1 text-sm text-gray-400">
+          Esports Manager
+        </p>
+      </div>
 
-      {isCoach && (
-        <NavLink
-          to="/matches"
-          style={({ isActive }) => ({
-            ...linkStyle,
-            background: isActive ? "#374151" : "transparent",
-          })}
-        >
-          <FaGamepad /> Add Match
+      <nav className="space-y-2">
+
+        <NavLink to="/" className={navClass}>
+          <FaHome />
+          Dashboard
         </NavLink>
-      )}
 
-      <NavLink
-        to="/history"
-        style={({ isActive }) => ({
-          ...linkStyle,
-          background: isActive ? "#374151" : "transparent",
-        })}
-      >
-        <FaGamepad /> Match History
-      </NavLink>
+        <NavLink to="/players" className={navClass}>
+          <FaUsers />
+          Players
+        </NavLink>
 
-      <NavLink
-        to="/leaderboard"
-        style={({ isActive }) => ({
-          ...linkStyle,
-          background: isActive ? "#374151" : "transparent",
-        })}
-      >
-        <FaTrophy /> Leaderboard
-      </NavLink>
+        {isCoach && (
+          <NavLink to="/matches" className={navClass}>
+            <FaGamepad />
+            Add Match
+          </NavLink>
+        )}
 
-      <NavLink
-        to="/analytics"
-        style={({ isActive }) => ({
-          ...linkStyle,
-          background: isActive ? "#374151" : "transparent",
-        })}
-      >
-        <FaChartBar /> Analytics
-      </NavLink>
+        <NavLink to="/history" className={navClass}>
+          <FaGamepad />
+          Match History
+        </NavLink>
 
-      {/* Bottom Section */}
-      <div style={{ marginTop: "auto" }}>
-        <hr style={{ borderColor: "#374151", marginBottom: "15px" }} />
+        <NavLink to="/leaderboard" className={navClass}>
+          <FaTrophy />
+          Leaderboard
+        </NavLink>
 
-        <p
-          style={{
-            fontSize: "13px",
-            color: "#9CA3AF",
-            marginBottom: "12px",
-            wordBreak: "break-word",
-          }}
-        >
+        <NavLink to="/analytics" className={navClass}>
+          <FaChartBar />
+          Analytics
+        </NavLink>
+
+      </nav>
+
+      <div className="mt-auto rounded-xl border border-slate-700 bg-slate-800 p-4">
+
+        <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">
+          Logged in as
+        </p>
+
+        <p className="truncate text-sm text-gray-300">
           {user?.email}
         </p>
 
         <button
           onClick={logout}
-          style={{
-            width: "100%",
-            background: "#DC2626",
-            color: "white",
-            border: "none",
-            padding: "12px",
-            borderRadius: "8px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "10px",
-          }}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-red-500"
         >
           <FaSignOutAlt />
           Logout
         </button>
+
       </div>
-    </div>
+
+    </aside>
   );
 }
 
