@@ -22,15 +22,17 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  const login = (email, password) => {
+  // Login
+  const login = async (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const logout = () => {
+  // Logout
+  const logout = async () => {
     return signOut(auth);
   };
 
-  // Coach Role
+  // Coach Permission
   const isCoach = user?.email === "coach@4baaj.com";
 
   return (
@@ -46,3 +48,5 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
+export default AuthProvider;
