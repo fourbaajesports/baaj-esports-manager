@@ -36,6 +36,12 @@ function Dashboard() {
   8: 1,
 };
 
+const totalPlacementPoints = matches.reduce(
+  (sum, match) =>
+    sum + (placementPoints[Number(match.placement)] || 0),
+  0
+);
+
 const averagePlacementPoints =
   totalMatches === 0
     ? "-"
@@ -108,9 +114,9 @@ const averagePlacementPoints =
         />
 
         <StatCard
-          title="⭐ Team Performance"
-          value={totalPerformance}
-        />
+  title="🎯 Total Placement Points"
+  value={totalPlacementPoints}
+/>
 
         <StatCard
           title="🏆 Chicken Dinners"

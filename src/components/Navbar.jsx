@@ -1,4 +1,5 @@
 import { FaBars } from "react-icons/fa";
+import logo from "../assets/logo.png";
 
 function Navbar({ setSidebarOpen }) {
   return (
@@ -18,10 +19,12 @@ function Navbar({ setSidebarOpen }) {
         {/* Brand */}
         <div className="flex items-center gap-3">
 
-          {/* Temporary 4 Baaj Icon */}
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500 text-xl">
-            🦅
-          </div>
+          {/* 4 Baaj Logo */}
+          <img
+            src={logo}
+            alt="4 Baaj Esports"
+            className="h-10 w-10 rounded-lg object-cover"
+          />
 
           <div>
             <h1 className="text-lg font-bold text-white md:text-2xl">

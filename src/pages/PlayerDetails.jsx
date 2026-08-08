@@ -13,25 +13,34 @@ function PlayerDetails() {
 
   if (!player) {
     return (
-      <div className="p-8 text-white">
-        <h1 className="text-3xl font-bold text-red-500">
-          Player Not Found
-        </h1>
+      <div className="p-6 text-xl text-white">
+        Player Not Found
       </div>
     );
   }
 
-  const playerMatches = matches.filter(
-    (match) =>
-      match.playerKills &&
-      match.playerKills[player.id] !== undefined
-  );
+  // =========================================
+  // Player Matches
+  // =========================================
+
+  const playerMatches = matches.filter((match) => {
+    const stats = match.playerStats?.[player.id];
+
+    return stats?.roomJoin;
+  });
+
+  // =========================================
+  // Player Stats
+  // =========================================
 
   const totalMatches = playerMatches.length;
 
   const totalKills = playerMatches.reduce(
-    (sum, match) =>
-      sum + Number(match.playerKills[player.id] || 0),
+    (sum, match) => {
+      const stats = match.playerStats?.[player.id];
+
+      return sum + Number(stats?.kills || 0);
+    },
     0
   );
 
@@ -49,13 +58,17 @@ function PlayerDetails() {
   ).length;
 
   return (
-    <div className="p-8 text-white">
+    <div>
 
       <h1 className="mb-8 text-4xl font-bold text-yellow-400">
         👤 {player.name}
       </h1>
 
+      {/* Player Information + Performance */}
+
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+
+        {/* Player Information */}
 
         <div className="rounded-xl bg-slate-800 p-6">
 
@@ -83,12 +96,16 @@ function PlayerDetails() {
               <span className="font-semibold text-gray-400">
                 Status :
               </span>{" "}
-              {player.active ? "🟢 Playing" : "🟡 Rotation"}
+              {player.active
+                ? "🟢 Playing"
+                : "🟡 Rotation"}
             </p>
 
           </div>
 
         </div>
+
+        {/* Performance */}
 
         <div className="rounded-xl bg-slate-800 p-6">
 
@@ -146,62 +163,81 @@ function PlayerDetails() {
 
       </div>
 
+      {/* Recent Matches */}
+
       <div className="rounded-xl bg-slate-800 p-6">
 
         <h2 className="mb-5 text-2xl font-bold text-yellow-400">
           📜 Recent Matches
         </h2>
-                {playerMatches.length === 0 ? (
+
+        {playerMatches.length === 0 ? (
+
           <p className="text-gray-400">
             No matches played yet.
           </p>
+
         ) : (
+
           <div className="space-y-4">
+
             {playerMatches
               .slice()
               .reverse()
               .slice(0, 5)
-              .map((match) => (
-                <div
-                  key={match.id}
-                  className="rounded-lg bg-slate-700 p-4"
-                >
-                  <div className="flex items-center justify-between">
+              .map((match) => {
 
-                    <div>
-                      <h3 className="text-lg font-bold text-yellow-400">
-                        {match.tournament || "Scrim"}
-                      </h3>
+                const stats =
+                  match.playerStats?.[player.id];
 
-                      <p className="text-gray-300">
-                        🗺️ {match.map}
-                      </p>
+                return (
+                  <div
+                    key={match.firestoreId || match.id}
+                    className="rounded-lg bg-slate-700 p-4"
+                  >
 
-                      <p className="text-gray-300">
-                        📅 {match.date}
-                      </p>
-                    </div>
+                    <div className="flex items-center justify-between">
 
-                    <div className="text-right">
+                      <div>
 
-                      <p>
-                        🏆 #{match.placement}
-                      </p>
+                        <h3 className="text-lg font-bold text-yellow-400">
+                          {match.tournament || "Scrim"}
+                        </h3>
 
-                      <p>
-                        🔥 {match.playerKills[player.id] ?? 0} Kills
-                      </p>
+                        <p className="text-gray-300">
+                          🗺️ {match.map}
+                        </p>
 
-                      <p>
-                        👥 Team {match.teamKills} Kills
-                      </p>
+                        <p className="text-gray-300">
+                          📅 {match.date}
+                        </p>
+
+                      </div>
+
+                      <div className="text-right">
+
+                        <p>
+                          🏆 #{match.placement}
+                        </p>
+
+                        <p>
+                          🔥 {stats?.kills || 0} Kills
+                        </p>
+
+                        <p>
+                          👥 Team {match.teamKills} Kills
+                        </p>
+
+                      </div>
 
                     </div>
 
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
           </div>
+
         )}
 
       </div>
