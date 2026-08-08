@@ -25,15 +25,28 @@ function Dashboard() {
     (match) => Number(match.placement) === 1
   ).length;
 
-  const averagePlacement =
-    totalMatches === 0
-      ? "-"
-      : (
-          matches.reduce(
-            (sum, match) => sum + Number(match.placement),
-            0
-          ) / totalMatches
-        ).toFixed(2);
+  const placementPoints = {
+  1: 10,
+  2: 6,
+  3: 5,
+  4: 4,
+  5: 3,
+  6: 2,
+  7: 1,
+  8: 1,
+};
+
+const averagePlacementPoints =
+  totalMatches === 0
+    ? "-"
+    : (
+        matches.reduce(
+          (sum, match) =>
+            sum +
+            (placementPoints[Number(match.placement)] || 0),
+          0
+        ) / totalMatches
+      ).toFixed(2);
 
   // ==========================
   // MVP
@@ -75,7 +88,7 @@ function Dashboard() {
         </h1>
 
         <p className="mt-2 text-gray-400">
-          Welcome back, Coach. Here's your team's latest performance.
+          Welcome back, team! Here's your latest performance.
         </p>
 
       </div>
@@ -105,8 +118,8 @@ function Dashboard() {
         />
 
         <StatCard
-          title="🎯 Avg Placement"
-          value={averagePlacement}
+          title="🎯 Avg Placement points"
+          value={averagePlacementPoints}
         />
 
         <StatCard

@@ -2,7 +2,7 @@ import { FaBars } from "react-icons/fa";
 
 function Navbar({ setSidebarOpen }) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-700 bg-slate-900 px-4 md:px-6">
+    <header className="flex items-center justify-between">
 
       {/* Left Side */}
       <div className="flex items-center gap-4">
@@ -15,14 +15,24 @@ function Navbar({ setSidebarOpen }) {
           <FaBars size={20} />
         </button>
 
-        <div>
-          <h1 className="text-lg font-bold text-white md:text-2xl">
-            Coach Dashboard 👑
-          </h1>
+        {/* Brand */}
+        <div className="flex items-center gap-3">
 
-          <p className="hidden text-sm text-gray-400 md:block">
-            Welcome back to 4 Baaj Esports Manager
-          </p>
+          {/* Temporary 4 Baaj Icon */}
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500 text-xl">
+            🦅
+          </div>
+
+          <div>
+            <h1 className="text-lg font-bold text-white md:text-2xl">
+              4 Baaj
+            </h1>
+
+            <p className="hidden text-sm text-gray-400 md:block">
+              Esports Manager
+            </p>
+          </div>
+
         </div>
 
       </div>

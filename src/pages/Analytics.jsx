@@ -36,16 +36,28 @@ function Analytics() {
     0
   );
 
-  const averagePlacement =
-    totalMatches === 0
-      ? 0
-      : (
-          matches.reduce(
-            (sum, match) =>
-              sum + Number(match.placement),
-            0
-          ) / totalMatches
-        ).toFixed(2);
+const placementPoints = {
+  1: 10,
+  2: 6,
+  3: 5,
+  4: 4,
+  5: 3,
+  6: 2,
+  7: 1,
+  8: 1,
+};
+
+  const averagePlacementPoints =
+  totalMatches === 0
+    ? 0
+    : (
+        matches.reduce(
+          (sum, match) =>
+            sum +
+            (placementPoints[Number(match.placement)] || 0),
+          0
+        ) / totalMatches
+      ).toFixed(2);
 
   const chickenCount = matches.filter(
     (m) => Number(m.placement) === 1
@@ -76,12 +88,13 @@ function Analytics() {
   // ==========================
 
   const matchChart = matches.map(
-    (match, index) => ({
-      match: `M${index + 1}`,
-      kills: Number(match.teamKills),
-      placement: Number(match.placement),
-    })
-  );
+  (match, index) => ({
+    match: `M${index + 1}`,
+    kills: Number(match.teamKills),
+    placementPoints:
+      placementPoints[Number(match.placement)] || 0,
+  })
+);
 
   const pieData = players.map((player) => ({
     name: player.name,
@@ -216,12 +229,12 @@ function Analytics() {
         <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
 
           <p className="text-gray-400">
-            📍 Avg Placement
-          </p>
+  🎯 Avg Placement Points
+</p>
 
-          <h2 className="mt-3 text-4xl font-bold">
-            {averagePlacement}
-          </h2>
+<h2 className="mt-3 text-4xl font-bold">
+  {averagePlacementPoints}
+</h2>
 
         </div>
 
@@ -264,30 +277,30 @@ function Analytics() {
 
         <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
 
-          <h2 className="mb-5 text-xl font-bold text-yellow-400">
-            📊 Placement Trend
-          </h2>
+         <h2 className="mb-5 text-xl font-bold text-yellow-400">
+  📊 Placement Points Per Match
+</h2>
 
-          <ResponsiveContainer width="100%" height={300}>
+<ResponsiveContainer width="100%" height={300}>
 
-            <BarChart data={matchChart}>
+  <BarChart data={matchChart}>
 
-              <CartesianGrid strokeDasharray="3 3" />
+    <CartesianGrid strokeDasharray="3 3" />
 
-              <XAxis dataKey="match" />
+    <XAxis dataKey="match" />
 
-              <YAxis reversed />
+    <YAxis />
 
-              <Tooltip />
+    <Tooltip />
 
-              <Bar
-                dataKey="placement"
-                fill="#3b82f6"
-              />
+    <Bar
+      dataKey="placementPoints"
+      fill="#3b82f6"
+    />
 
-            </BarChart>
+  </BarChart>
 
-          </ResponsiveContainer>
+</ResponsiveContainer>
 
         </div>
 
