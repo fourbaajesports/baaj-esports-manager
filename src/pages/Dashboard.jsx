@@ -16,50 +16,42 @@ function Dashboard() {
     0
   );
 
-  const totalPerformance = players.reduce(
-    (sum, player) => sum + Number(player.performancePoints || 0),
-    0
-  );
-
   const totalChicken = matches.filter(
     (match) => Number(match.placement) === 1
   ).length;
 
+  // ==========================
+  // Placement Points
+  // ==========================
+
   const placementPoints = {
-  1: 10,
-  2: 6,
-  3: 5,
-  4: 4,
-  5: 3,
-  6: 2,
-  7: 1,
-  8: 1,
-};
+    1: 10,
+    2: 6,
+    3: 5,
+    4: 4,
+    5: 3,
+    6: 2,
+    7: 1,
+    8: 1,
+  };
 
-const totalPlacementPoints = matches.reduce(
-  (sum, match) =>
-    sum + (placementPoints[Number(match.placement)] || 0),
-  0
-);
+  const totalPlacementPoints = matches.reduce(
+    (sum, match) =>
+      sum + (placementPoints[Number(match.placement)] || 0),
+    0
+  );
 
-const averagePlacementPoints =
-  totalMatches === 0
-    ? "-"
-    : (
-        matches.reduce(
-          (sum, match) =>
-            sum +
-            (placementPoints[Number(match.placement)] || 0),
-          0
-        ) / totalMatches
-      ).toFixed(2);
+  // Total Points = Kills + Placement Points
+  const totalPoints = totalKills + totalPlacementPoints;
 
   // ==========================
   // MVP
   // ==========================
 
   const currentMVP = [...players].sort(
-    (a, b) => b.performancePoints - a.performancePoints
+    (a, b) =>
+      Number(b.performancePoints || 0) -
+      Number(a.performancePoints || 0)
   )[0];
 
   // ==========================
@@ -67,11 +59,19 @@ const averagePlacementPoints =
   // ==========================
 
   const killLeaderboard = [...players]
-    .sort((a, b) => b.totalKills - a.totalKills)
+    .sort(
+      (a, b) =>
+        Number(b.totalKills || 0) -
+        Number(a.totalKills || 0)
+    )
     .slice(0, 5);
 
   const performanceLeaderboard = [...players]
-    .sort((a, b) => b.performancePoints - a.performancePoints)
+    .sort(
+      (a, b) =>
+        Number(b.performancePoints || 0) -
+        Number(a.performancePoints || 0)
+    )
     .slice(0, 5);
 
   // ==========================
@@ -88,7 +88,6 @@ const averagePlacementPoints =
       {/* Header */}
 
       <div>
-
         <h1 className="text-4xl font-extrabold text-yellow-400">
           🦅 4 Baaj Dashboard
         </h1>
@@ -96,7 +95,6 @@ const averagePlacementPoints =
         <p className="mt-2 text-gray-400">
           Welcome back, team! Here's your latest performance.
         </p>
-
       </div>
 
       {/* Top Cards */}
@@ -114,18 +112,18 @@ const averagePlacementPoints =
         />
 
         <StatCard
-  title="🎯 Total Placement Points"
-  value={totalPlacementPoints}
-/>
+          title="🎯 Total Placement Points"
+          value={totalPlacementPoints}
+        />
+
+        <StatCard
+          title="🏅 Total Points"
+          value={totalPoints}
+        />
 
         <StatCard
           title="🏆 Chicken Dinners"
           value={totalChicken}
-        />
-
-        <StatCard
-          title="🎯 Avg Placement points"
-          value={averagePlacementPoints}
         />
 
         <StatCard
@@ -147,7 +145,9 @@ const averagePlacementPoints =
             🔥 Kill Leaderboard
           </h2>
 
-          <div className="space-y-3">            {killLeaderboard.map((player, index) => (
+          <div className="space-y-3">
+
+            {killLeaderboard.map((player, index) => (
 
               <div
                 key={player.id}
@@ -215,7 +215,9 @@ const averagePlacementPoints =
 
           </div>
 
-        </div>        {/* Recent Matches */}
+        </div>
+
+        {/* Recent Matches */}
 
         <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400 hover:shadow-yellow-500/10">
 
