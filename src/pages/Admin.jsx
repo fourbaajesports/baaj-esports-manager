@@ -61,16 +61,12 @@ function Admin() {
   // Round Management
   // =========================================
 
-  const handleRoundChange = (
-    index,
-    value
-  ) => {
+  const handleRoundChange = (index, value) => {
     setRounds((currentRounds) =>
-      currentRounds.map(
-        (round, roundIndex) =>
-          roundIndex === index
-            ? value
-            : round
+      currentRounds.map((round, roundIndex) =>
+        roundIndex === index
+          ? value
+          : round
       )
     );
   };
@@ -110,12 +106,15 @@ function Admin() {
       return;
     }
 
-    if (!finalPosition) {
-      setError(
-        "Please enter the final position."
-      );
-      return;
-    }
+    /*
+      Final position is intentionally optional.
+
+      If the tournament is still ongoing,
+      leave this field blank.
+
+      Once the tournament is completed,
+      enter the final position.
+    */
 
     const cleanedRounds = rounds
       .map((round) => round.trim())
@@ -149,8 +148,10 @@ function Admin() {
       setSaving(true);
 
       await addTournament({
-        name: tournamentName,
-        finalPosition,
+        name: tournamentName.trim(),
+        finalPosition: finalPosition
+          ? Number(finalPosition)
+          : "",
         rounds: cleanedRounds,
       });
 
@@ -159,7 +160,9 @@ function Admin() {
       setRounds([""]);
 
       setSuccess(
-        "Tournament created successfully."
+        finalPosition
+          ? "Tournament created successfully."
+          : "Tournament created successfully as an ongoing tournament."
       );
     } catch (error) {
       console.error(error);
@@ -376,8 +379,8 @@ function Admin() {
 
               <p className="mt-1 text-xs text-gray-500">
                 Set the tournament, final position and
-                rounds once. Match entry will use these
-                saved values later.
+                rounds once. Leave final position blank
+                if the tournament is still ongoing.
               </p>
 
             </div>
@@ -421,6 +424,9 @@ function Admin() {
 
               <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
                 Final Position
+                <span className="ml-2 text-gray-700">
+                  Optional
+                </span>
               </label>
 
               <input
@@ -432,7 +438,7 @@ function Admin() {
                     e.target.value
                   )
                 }
-                placeholder="e.g. 3"
+                placeholder="Leave blank if ongoing"
                 className="w-full border border-white/10 bg-[#050505] px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 placeholder:text-gray-700 focus:border-[#d4af37]/60 focus:bg-white/[0.02]"
               />
 
@@ -688,14 +694,15 @@ function Admin() {
                     <div className="shrink-0 border border-[#d4af37]/20 bg-[#d4af37]/10 px-4 py-2 text-center">
 
                       <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-[#d4af37]">
-                        Finish
+                        {tournament.finalPosition
+                          ? "Finish"
+                          : "Status"}
                       </p>
 
                       <p className="mt-0.5 text-xl font-black text-[#d4af37]">
-                        #
-                        {
-                          tournament.finalPosition
-                        }
+                        {tournament.finalPosition
+                          ? `#${tournament.finalPosition}`
+                          : "ONGOING"}
                       </p>
 
                     </div>
