@@ -4,259 +4,366 @@ import { MatchContext } from "../context/MatchContext";
 function Leaderboard() {
   const { players, matches } = useContext(MatchContext);
 
-  const [tab, setTab] = useState("kills");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTournament, setSelectedTournament] = useState("");
 
-  // ==========================
-  // Date Filter
-  // ==========================
+  // =========================
+  // TOURNAMENT LIST
+  // =========================
 
-  const filteredMatches = selectedDate
-    ? matches.filter((match) => {
-        if (!match.date) return false;
+  const tournamentNames = [
+    ...new Set(
+      matches
+        .map((match) => match.tournament)
+        .filter(Boolean)
+    ),
+  ];
 
-        const matchDate = new Date(match.date);
+  // =========================
+  // TOURNAMENT FILTER
+  // =========================
 
-        if (isNaN(matchDate.getTime())) return false;
-
-        const formattedDate = `${matchDate.getFullYear()}-${String(
-          matchDate.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-          matchDate.getDate()
-        ).padStart(2, "0")}`;
-
-        return formattedDate === selectedDate;
-      })
+  const filteredMatches = selectedTournament
+    ? matches.filter(
+        (match) =>
+          match.tournament === selectedTournament
+      )
     : matches;
 
-  // ==========================
-  // Calculate Player Stats
-  // ==========================
+  // =========================
+  // PLAYER STATS
+  // =========================
 
   const leaderboardPlayers = players.map((player) => {
     let totalKills = 0;
     let matchesPlayed = 0;
-    let performancePoints = 0;
 
     filteredMatches.forEach((match) => {
       const stats = match.playerStats?.[player.id];
 
-      if (!stats?.roomJoin) return;
+      if (!stats) return;
 
       const kills = Number(stats.kills || 0);
 
-      const roomJoinPoints = 1;
-
-      const chickenPoints = stats.chicken ? 2 : 0;
-
-      const top8Points =
-        Number(match.placement) >= 2 &&
-        Number(match.placement) <= 8
-          ? 1
-          : 0;
-
-      const penaltyPoints = stats.penalty ? -1 : 0;
-
-      const performance =
-        kills +
-        roomJoinPoints +
-        chickenPoints +
-        top8Points +
-        penaltyPoints;
-
       totalKills += kills;
-      performancePoints += performance;
       matchesPlayed += 1;
     });
+
+    const averageKills =
+      matchesPlayed > 0
+        ? Number(
+            (
+              totalKills / matchesPlayed
+            ).toFixed(2)
+          )
+        : 0;
 
     return {
       ...player,
       totalKills,
       matchesPlayed,
-      performancePoints,
+      averageKills,
     };
   });
 
-  // ==========================
-  // Sort
-  // ==========================
+  // =========================
+  // SORT BY KILLS
+  // =========================
 
-  const sortedPlayers = [...leaderboardPlayers].sort((a, b) =>
-    tab === "kills"
-      ? b.totalKills - a.totalKills
-      : b.performancePoints - a.performancePoints
-  );
+  const sortedPlayers = [
+    ...leaderboardPlayers,
+  ].sort((a, b) => {
+    if (b.totalKills !== a.totalKills) {
+      return b.totalKills - a.totalKills;
+    }
 
-  // ==========================
-  // Medal
-  // ==========================
+    return b.averageKills - a.averageKills;
+  });
 
-  const medal = (index) => {
-    if (index === 0) return "🥇";
-    if (index === 1) return "🥈";
-    if (index === 2) return "🥉";
+  // =========================
+  // RANK STYLE
+  // =========================
 
-    return `#${index + 1}`;
+  const getRankStyle = (index) => {
+    if (index === 0) {
+      return {
+        border: "border-[#d4af37]/50",
+        glow:
+          "shadow-[0_0_35px_rgba(212,175,55,0.10)]",
+        number: "text-[#d4af37]",
+        badge:
+          "bg-[#d4af37]/10 border-[#d4af37]/30",
+      };
+    }
+
+    if (index === 1) {
+      return {
+        border: "border-gray-400/30",
+        glow:
+          "shadow-[0_0_30px_rgba(156,163,175,0.06)]",
+        number: "text-gray-300",
+        badge:
+          "bg-gray-400/10 border-gray-400/20",
+      };
+    }
+
+    if (index === 2) {
+      return {
+        border: "border-orange-500/30",
+        glow:
+          "shadow-[0_0_30px_rgba(249,115,22,0.06)]",
+        number: "text-orange-400",
+        badge:
+          "bg-orange-500/10 border-orange-500/20",
+      };
+    }
+
+    return {
+      border: "border-white/5",
+      glow: "",
+      number: "text-gray-600",
+      badge:
+        "bg-white/[0.03] border-white/5",
+    };
   };
 
   return (
     <div className="space-y-8">
+      {/* =========================
+          HEADER
+      ========================= */}
 
-      {/* Header */}
+      <section className="relative overflow-hidden border border-white/5 bg-[#080808] px-6 py-8 md:px-8">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#19c77a]/70 to-transparent" />
 
-      <div>
-        <h1 className="text-3xl font-bold text-yellow-400">
-          🏆 Leaderboard
-        </h1>
+        <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#19c77a]/5 blur-3xl" />
 
-        <p className="mt-2 text-gray-400">
-          Top performing players of 4 Baaj Esports.
+        <div className="relative">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#19c77a]">
+            Player Statistics
+          </p>
+
+          <div className="mt-3 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <h1 className="text-3xl font-black uppercase tracking-tight text-white md:text-5xl">
+                Leaderboard
+              </h1>
+
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
+                Player rankings based on total
+                kills and average kills per
+                match.
+              </p>
+            </div>
+
+            <div className="border border-white/5 bg-white/[0.025] px-4 py-3">
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                Ranking Metric
+              </p>
+
+              <p className="mt-1 text-xs font-black uppercase tracking-[0.15em] text-white">
+                Kills + Average
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================
+          TOURNAMENT FILTER
+      ========================= */}
+
+      <section className="border border-white/5 bg-[#080808] p-5 md:p-6">
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[0.25em] text-gray-600">
+              Performance Filter
+            </p>
+
+            <h2 className="mt-2 text-lg font-black uppercase tracking-wide text-white">
+              Filter By Tournament
+            </h2>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div>
+              <label className="mb-2 block text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                Select Tournament
+              </label>
+
+              <select
+                value={selectedTournament}
+                onChange={(e) =>
+                  setSelectedTournament(
+                    e.target.value
+                  )
+                }
+                className="h-11 min-w-[220px] border border-white/10 bg-[#050505] px-4 text-sm font-semibold text-white outline-none transition focus:border-[#19c77a]/50"
+              >
+                <option
+                  value=""
+                  className="bg-[#050505]"
+                >
+                  All Tournaments
+                </option>
+
+                {tournamentNames.map(
+                  (tournament) => (
+                    <option
+                      key={tournament}
+                      value={tournament}
+                      className="bg-[#050505]"
+                    >
+                      {tournament}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+
+            <button
+              onClick={() =>
+                setSelectedTournament("")
+              }
+              className="h-11 border border-[#19c77a]/20 bg-[#19c77a]/5 px-5 text-[10px] font-black uppercase tracking-[0.18em] text-[#19c77a] transition-all duration-300 hover:border-[#19c77a]/50 hover:bg-[#19c77a]/10"
+            >
+              All Tournaments
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================
+          FILTER INFO
+      ========================= */}
+
+      <div className="flex items-center justify-between border-b border-white/5 pb-4">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-gray-600">
+            Current View
+          </p>
+
+          <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-gray-400">
+            {selectedTournament
+              ? `Leaderboard for ${selectedTournament}`
+              : "Overall Leaderboard"}
+          </p>
+        </div>
+
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#19c77a]">
+          {sortedPlayers.length} Players
         </p>
       </div>
 
-      {/* Date Filter */}
+      {/* =========================
+          LEADERBOARD
+      ========================= */}
 
-      <div className="flex flex-wrap items-end gap-4 rounded-2xl border border-slate-700 bg-slate-800 p-5">
+      <div className="space-y-3">
+        {sortedPlayers.map(
+          (player, index) => {
+            const rankStyle =
+              getRankStyle(index);
 
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-400">
-            📅 Select Date
-          </label>
+            return (
+              <div
+                key={player.id}
+                className={`group relative overflow-hidden border bg-[#080808] p-5 transition-all duration-500 hover:-translate-y-0.5 hover:border-[#19c77a]/30 md:p-6 ${rankStyle.border} ${rankStyle.glow}`}
+              >
+                <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-[#19c77a]/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="rounded-xl border border-slate-600 bg-slate-700 px-4 py-3 text-white outline-none focus:border-yellow-400"
-          />
+                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                  {/* PLAYER */}
+
+                  <div className="flex min-w-0 items-center gap-5">
+                    <div
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center border ${rankStyle.badge}`}
+                    >
+                      <span
+                        className={`text-lg font-black ${rankStyle.number}`}
+                      >
+                        {index + 1}
+                      </span>
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                        Rank {index + 1}
+                      </p>
+
+                      <h2 className="mt-1 truncate text-xl font-black uppercase tracking-wide text-white transition-colors duration-300 group-hover:text-[#19c77a] md:text-2xl">
+                        {player.ign ||
+                          player.name}
+                      </h2>
+
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                        {player.role}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* STATS */}
+
+                  <div className="grid grid-cols-3 border-t border-white/5 pt-5 md:flex md:border-t-0 md:pt-0">
+                    {/* MATCHES */}
+
+                    <div className="min-w-[90px] px-3 text-center md:border-l md:border-white/5 md:px-6">
+                      <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                        Matches
+                      </p>
+
+                      <p className="mt-2 text-xl font-black text-white">
+                        {player.matchesPlayed}
+                      </p>
+                    </div>
+
+                    {/* TOTAL KILLS */}
+
+                    <div className="min-w-[90px] border-l border-white/5 px-3 text-center md:px-6">
+                      <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                        Total Kills
+                      </p>
+
+                      <p className="mt-2 text-xl font-black text-[#19c77a]">
+                        {player.totalKills}
+                      </p>
+                    </div>
+
+                    {/* AVERAGE */}
+
+                    <div className="min-w-[90px] border-l border-white/5 px-3 text-center md:px-6">
+                      <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                        Avg / Match
+                      </p>
+
+                      <p className="mt-2 text-xl font-black text-[#d4af37]">
+                        {player.averageKills}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+        )}
+      </div>
+
+      {/* =========================
+          EMPTY STATE
+      ========================= */}
+
+      {sortedPlayers.length === 0 && (
+        <div className="border border-dashed border-white/10 bg-[#080808] p-10 text-center">
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-600">
+            No Player Statistics
+          </p>
+
+          <p className="mt-2 text-sm text-gray-500">
+            Player statistics will appear
+            here once match data is
+            available.
+          </p>
         </div>
-
-        <button
-          onClick={() => setSelectedDate("")}
-          className="rounded-xl bg-slate-600 px-5 py-3 font-bold text-white transition hover:bg-slate-500"
-        >
-          All Dates
-        </button>
-
-      </div>
-
-      {/* Selected Date Info */}
-
-      <div className="text-sm text-gray-400">
-        {selectedDate
-          ? `Showing leaderboard for ${selectedDate}`
-          : "Showing overall leaderboard"}
-      </div>
-
-      {/* Tabs */}
-
-      <div className="flex flex-wrap gap-3">
-
-        <button
-          onClick={() => setTab("kills")}
-          className={`rounded-xl px-6 py-3 font-bold transition ${
-            tab === "kills"
-              ? "bg-yellow-500 text-black"
-              : "bg-slate-700 text-white hover:bg-slate-600"
-          }`}
-        >
-          🔥 Kill Leaderboard
-        </button>
-
-        <button
-          onClick={() => setTab("performance")}
-          className={`rounded-xl px-6 py-3 font-bold transition ${
-            tab === "performance"
-              ? "bg-yellow-500 text-black"
-              : "bg-slate-700 text-white hover:bg-slate-600"
-          }`}
-        >
-          ⭐ Performance
-        </button>
-
-      </div>
-
-      {/* Players */}
-
-      <div className="space-y-4">
-
-        {sortedPlayers.map((player, index) => (
-
-          <div
-            key={player.id}
-            className="flex flex-col gap-4 rounded-2xl border border-slate-700 bg-slate-800 p-5 shadow-lg transition hover:border-yellow-400 md:flex-row md:items-center md:justify-between"
-          >
-
-            <div className="flex items-center gap-5">
-
-              <div className="text-4xl">
-                {medal(index)}
-              </div>
-
-              <div>
-
-                <h2 className="text-xl font-bold text-yellow-400">
-                  {player.name}
-                </h2>
-
-                <p className="text-gray-400">
-                  {player.role}
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  {player.ign}
-                </p>
-
-              </div>
-
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 text-center md:flex md:gap-10">
-
-              <div>
-
-                <p className="text-xs text-gray-400">
-                  Matches
-                </p>
-
-                <p className="text-xl font-bold">
-                  {player.matchesPlayed}
-                </p>
-
-              </div>
-
-              <div>
-
-                <p className="text-xs text-gray-400">
-                  Kills
-                </p>
-
-                <p className="text-xl font-bold text-yellow-400">
-                  {player.totalKills}
-                </p>
-
-              </div>
-
-              <div>
-
-                <p className="text-xs text-gray-400">
-                  Performance
-                </p>
-
-                <p className="text-xl font-bold text-yellow-400">
-                  {player.performancePoints}
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        ))}
-
-      </div>
-
+      )}
     </div>
   );
 }
