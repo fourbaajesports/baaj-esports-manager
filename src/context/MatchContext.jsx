@@ -366,16 +366,67 @@ export function MatchProvider({ children }) {
   };
 
   // =========================================
+  // Clean Tournament Rounds
+  // =========================================
+
+  const cleanTournamentRounds = (rounds = []) => {
+    return [
+      ...new Set(
+        rounds
+          .map((round) =>
+            String(round).trim()
+          )
+          .filter(Boolean)
+      ),
+    ];
+  };
+
+  // =========================================
+  // Normalize Final Position
+  // =========================================
+
+  const normalizeFinalPosition = (
+    finalPosition
+  ) => {
+    /*
+      Empty position means tournament
+      is still ongoing.
+    */
+
+    if (
+      finalPosition === "" ||
+      finalPosition === null ||
+      finalPosition === undefined
+    ) {
+      return "";
+    }
+
+    const position = Number(finalPosition);
+
+    if (
+      !Number.isInteger(position) ||
+      position < 1
+    ) {
+      throw new Error(
+        "Final position must be a valid positive number or left blank if ongoing."
+      );
+    }
+
+    return position;
+  };
+
+  // =========================================
   // Add Tournament
   // =========================================
 
   const addTournament = async ({
     name,
-    finalPosition,
+    finalPosition = "",
     rounds = [],
   }) => {
     try {
-      const tournamentName = name.trim();
+      const tournamentName =
+        name?.trim();
 
       if (!tournamentName) {
         throw new Error(
@@ -383,34 +434,15 @@ export function MatchProvider({ children }) {
         );
       }
 
-      const position = Number(
-        finalPosition
-      );
-
-      if (
-        !Number.isInteger(position) ||
-        position < 1
-      ) {
-        throw new Error(
-          "Final position must be a valid positive number."
+      const position =
+        normalizeFinalPosition(
+          finalPosition
         );
-      }
 
-      /*
-        Clean and normalize rounds.
-        Empty rounds are removed.
-        Duplicate rounds are removed.
-      */
-
-      const cleanedRounds = [
-        ...new Set(
+      const cleanedRounds =
+        cleanTournamentRounds(
           rounds
-            .map((round) =>
-              String(round).trim()
-            )
-            .filter(Boolean)
-        ),
-      ];
+        );
 
       if (cleanedRounds.length === 0) {
         throw new Error(
@@ -435,18 +467,14 @@ export function MatchProvider({ children }) {
         collection(db, "tournaments"),
         {
           name: tournamentName,
+
+          /*
+            Blank = Ongoing
+            Number = Completed
+          */
           finalPosition: position,
 
-          /*
-            Tournament-specific rounds
-          */
-
           rounds: cleanedRounds,
-
-          /*
-            Maps are currently fixed for
-            every tournament.
-          */
 
           maps: MAPS,
 
@@ -484,28 +512,20 @@ export function MatchProvider({ children }) {
       const tournamentName =
         updatedTournament.name?.trim();
 
-      const position = Number(
-        updatedTournament.finalPosition
-      );
-
       if (!tournamentName) {
         throw new Error(
           "Tournament name is required."
         );
       }
 
-      if (
-        !Number.isInteger(position) ||
-        position < 1
-      ) {
-        throw new Error(
-          "Final position must be a valid positive number."
+      const position =
+        normalizeFinalPosition(
+          updatedTournament.finalPosition
         );
-      }
 
       /*
-        Preserve existing rounds when
-        updating an old tournament.
+        Preserve existing rounds if
+        updated rounds are not supplied.
       */
 
       const existingTournament =
@@ -518,18 +538,44 @@ export function MatchProvider({ children }) {
       const existingRounds =
         existingTournament?.rounds || [];
 
-      const cleanedRounds = [
-        ...new Set(
-          (
-            updatedTournament.rounds ||
-            existingRounds
-          )
-            .map((round) =>
-              String(round).trim()
-            )
-            .filter(Boolean)
-        ),
-      ];
+      const roundsToUse =
+        Array.isArray(
+          updatedTournament.rounds
+        )
+          ? updatedTournament.rounds
+          : existingRounds;
+
+      const cleanedRounds =
+        cleanTournamentRounds(
+          roundsToUse
+        );
+
+      if (cleanedRounds.length === 0) {
+        throw new Error(
+          "Please keep at least one round."
+        );
+      }
+
+      /*
+        Prevent duplicate tournament names
+        when changing the name.
+      */
+
+      const duplicate =
+        tournaments.some(
+          (tournament) =>
+            tournament.firestoreId !==
+              firestoreId &&
+            tournament.name
+              ?.toLowerCase() ===
+              tournamentName.toLowerCase()
+        );
+
+      if (duplicate) {
+        throw new Error(
+          "This tournament already exists."
+        );
+      }
 
       await updateDoc(
         doc(
@@ -539,6 +585,11 @@ export function MatchProvider({ children }) {
         ),
         {
           name: tournamentName,
+
+          /*
+            Blank = Ongoing
+            Number = Completed
+          */
           finalPosition: position,
 
           rounds: cleanedRounds,
@@ -597,7 +648,8 @@ export function MatchProvider({ children }) {
     return (
       tournaments.find(
         (tournament) =>
-          tournament.name === tournamentName
+          tournament.name ===
+          tournamentName
       ) || null
     );
   };
@@ -614,12 +666,6 @@ export function MatchProvider({ children }) {
         tournamentName
       );
 
-    /*
-      New tournaments:
-      Use the rounds saved inside
-      the tournament document.
-    */
-
     if (
       tournament?.rounds &&
       Array.isArray(tournament.rounds) &&
@@ -630,10 +676,7 @@ export function MatchProvider({ children }) {
 
     /*
       Old tournaments:
-      If rounds were not saved previously,
-      use existing match stages as fallback.
-
-      This keeps old data working.
+      Use existing match stages.
     */
 
     const oldStages = [
@@ -663,14 +706,6 @@ export function MatchProvider({ children }) {
       getTournamentDetails(
         tournamentName
       );
-
-    /*
-      If a tournament has a maps array,
-      use it.
-
-      Otherwise use the current
-      fixed map list.
-    */
 
     if (
       tournament?.maps &&
@@ -713,7 +748,8 @@ export function MatchProvider({ children }) {
   ) => {
     return matches.filter(
       (match) =>
-        match.tournament === tournament
+        match.tournament ===
+        tournament
     );
   };
 
@@ -869,7 +905,6 @@ export function MatchProvider({ children }) {
     if (!confirmReset) return;
 
     try {
-      // Delete matches
       const matchSnapshot =
         await getDocs(
           collection(db, "matches")
@@ -884,7 +919,6 @@ export function MatchProvider({ children }) {
         );
       }
 
-      // Delete tournaments
       const tournamentSnapshot =
         await getDocs(
           collection(db, "tournaments")

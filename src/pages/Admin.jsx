@@ -11,6 +11,9 @@ import {
   FaArrowRight,
   FaExclamationTriangle,
   FaTrashAlt,
+  FaEdit,
+  FaSave,
+  FaTimes,
 } from "react-icons/fa";
 
 import { AuthContext } from "../context/AuthContext";
@@ -22,10 +25,15 @@ function Admin() {
   const {
     tournaments,
     addTournament,
+    updateTournament,
     resetAllData,
   } = useContext(MatchContext);
 
   const navigate = useNavigate();
+
+  // =========================================
+  // Create Tournament State
+  // =========================================
 
   const [tournamentName, setTournamentName] =
     useState("");
@@ -38,6 +46,29 @@ function Admin() {
 
   const [saving, setSaving] =
     useState(false);
+
+  // =========================================
+  // Edit Tournament State
+  // =========================================
+
+  const [editingTournamentId, setEditingTournamentId] =
+    useState(null);
+
+  const [editTournamentName, setEditTournamentName] =
+    useState("");
+
+  const [editFinalPosition, setEditFinalPosition] =
+    useState("");
+
+  const [editRounds, setEditRounds] =
+    useState([""]);
+
+  const [updatingTournament, setUpdatingTournament] =
+    useState(false);
+
+  // =========================================
+  // General State
+  // =========================================
 
   const [resetting, setResetting] =
     useState(false);
@@ -58,7 +89,7 @@ function Admin() {
   };
 
   // =========================================
-  // Round Management
+  // Create Round Management
   // =========================================
 
   const handleRoundChange = (index, value) => {
@@ -90,6 +121,185 @@ function Admin() {
   };
 
   // =========================================
+  // Edit Round Management
+  // =========================================
+
+  const handleEditRoundChange = (
+    index,
+    value
+  ) => {
+    setEditRounds((currentRounds) =>
+      currentRounds.map((round, roundIndex) =>
+        roundIndex === index
+          ? value
+          : round
+      )
+    );
+  };
+
+  const addEditRoundField = () => {
+    setEditRounds((currentRounds) => [
+      ...currentRounds,
+      "",
+    ]);
+  };
+
+  const removeEditRoundField = (index) => {
+    if (editRounds.length === 1) return;
+
+    setEditRounds((currentRounds) =>
+      currentRounds.filter(
+        (_, roundIndex) =>
+          roundIndex !== index
+      )
+    );
+  };
+
+  // =========================================
+  // Start Editing Tournament
+  // =========================================
+
+  const handleStartEdit = (tournament) => {
+    setError("");
+    setSuccess("");
+
+    setEditingTournamentId(
+      tournament.firestoreId
+    );
+
+    setEditTournamentName(
+      tournament.name || ""
+    );
+
+    setEditFinalPosition(
+      tournament.finalPosition
+        ? String(tournament.finalPosition)
+        : ""
+    );
+
+    setEditRounds(
+      tournament.rounds?.length > 0
+        ? [...tournament.rounds]
+        : [""]
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // =========================================
+  // Cancel Editing
+  // =========================================
+
+  const handleCancelEdit = () => {
+    setEditingTournamentId(null);
+    setEditTournamentName("");
+    setEditFinalPosition("");
+    setEditRounds([""]);
+
+    setError("");
+  };
+
+  // =========================================
+  // Update Tournament
+  // =========================================
+
+  const handleUpdateTournament = async (
+    e
+  ) => {
+    e.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    if (!editTournamentName.trim()) {
+      setError(
+        "Please enter a tournament name."
+      );
+      return;
+    }
+
+    const cleanedRounds = editRounds
+      .map((round) => round.trim())
+      .filter(Boolean);
+
+    if (cleanedRounds.length === 0) {
+      setError(
+        "Please add at least one round."
+      );
+      return;
+    }
+
+    const duplicateRounds =
+      cleanedRounds.filter(
+        (round, index) =>
+          cleanedRounds.findIndex(
+            (item) =>
+              item.toLowerCase() ===
+              round.toLowerCase()
+          ) !== index
+      );
+
+    if (duplicateRounds.length > 0) {
+      setError(
+        "Round names must be unique."
+      );
+      return;
+    }
+
+    if (
+      editFinalPosition &&
+      Number(editFinalPosition) < 1
+    ) {
+      setError(
+        "Final position must be a valid positive number."
+      );
+      return;
+    }
+
+    try {
+      setUpdatingTournament(true);
+
+      await updateTournament({
+        firestoreId:
+          editingTournamentId,
+
+        name:
+          editTournamentName.trim(),
+
+        finalPosition:
+          editFinalPosition
+            ? Number(editFinalPosition)
+            : "",
+
+        rounds: cleanedRounds,
+      });
+
+      setEditingTournamentId(null);
+      setEditTournamentName("");
+      setEditFinalPosition("");
+      setEditRounds([""]);
+
+      setSuccess(
+        editFinalPosition
+          ? "Tournament updated successfully."
+          : "Tournament updated successfully as an ongoing tournament."
+      );
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        error.message ||
+          "Failed to update tournament."
+      );
+    } finally {
+      setUpdatingTournament(false);
+    }
+  };
+
+  // =========================================
   // Create Tournament
   // =========================================
 
@@ -105,16 +315,6 @@ function Admin() {
       );
       return;
     }
-
-    /*
-      Final position is intentionally optional.
-
-      If the tournament is still ongoing,
-      leave this field blank.
-
-      Once the tournament is completed,
-      enter the final position.
-    */
 
     const cleanedRounds = rounds
       .map((round) => round.trim())
@@ -144,14 +344,26 @@ function Admin() {
       return;
     }
 
+    if (
+      finalPosition &&
+      Number(finalPosition) < 1
+    ) {
+      setError(
+        "Final position must be a valid positive number."
+      );
+      return;
+    }
+
     try {
       setSaving(true);
 
       await addTournament({
         name: tournamentName.trim(),
+
         finalPosition: finalPosition
           ? Number(finalPosition)
           : "",
+
         rounds: cleanedRounds,
       });
 
@@ -358,6 +570,252 @@ function Admin() {
 
 
       {/* =========================================
+          GLOBAL MESSAGE
+      ========================================= */}
+
+      {(error || success) && (
+        <section
+          className={
+            error
+              ? "border border-red-500/20 bg-red-500/5 px-5 py-4 text-sm text-red-400"
+              : "border border-[#19c77a]/20 bg-[#19c77a]/5 px-5 py-4 text-sm text-[#19c77a]"
+          }
+        >
+          {error || success}
+        </section>
+      )}
+
+
+      {/* =========================================
+          EDIT TOURNAMENT
+      ========================================= */}
+
+      {editingTournamentId && (
+        <section className="border border-[#d4af37]/30 bg-[#080808]">
+
+          <div className="border-b border-white/5 px-6 py-5 md:px-8">
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+              <div className="flex items-center gap-4">
+
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-[#d4af37]/20 bg-[#d4af37]/10 text-[#d4af37]">
+                  <FaEdit size={18} />
+                </div>
+
+                <div>
+
+                  <h2 className="text-xl font-black md:text-2xl">
+                    Edit Tournament
+                  </h2>
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Update rounds and final position
+                    as the tournament progresses.
+                  </p>
+
+                </div>
+
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="flex items-center justify-center gap-2 border border-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-gray-500 transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/5 hover:text-red-400"
+              >
+                <FaTimes size={11} />
+                Cancel
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <form
+            onSubmit={handleUpdateTournament}
+            className="space-y-7 p-6 md:p-8"
+          >
+
+            {/* Tournament + Position */}
+
+            <div className="grid gap-6 md:grid-cols-[1fr_220px]">
+
+              <div>
+
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
+                  Tournament Name
+                </label>
+
+                <input
+                  type="text"
+                  value={editTournamentName}
+                  onChange={(e) =>
+                    setEditTournamentName(
+                      e.target.value
+                    )
+                  }
+                  className="w-full border border-white/10 bg-[#050505] px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 focus:border-[#d4af37]/60 focus:bg-white/[0.02]"
+                />
+
+              </div>
+
+
+              <div>
+
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
+                  Final Position
+                  <span className="ml-2 text-gray-700">
+                    Optional
+                  </span>
+                </label>
+
+                <input
+                  type="number"
+                  min="1"
+                  value={editFinalPosition}
+                  onChange={(e) =>
+                    setEditFinalPosition(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Leave blank if ongoing"
+                  className="w-full border border-white/10 bg-[#050505] px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 placeholder:text-gray-700 focus:border-[#d4af37]/60 focus:bg-white/[0.02]"
+                />
+
+              </div>
+
+            </div>
+
+
+            {/* Rounds */}
+
+            <div>
+
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+
+                <div>
+
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
+                    Tournament Rounds
+                  </label>
+
+                  <p className="mt-1 text-xs text-gray-600">
+                    Add, remove or rename rounds.
+                  </p>
+
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addEditRoundField}
+                  className="flex items-center justify-center gap-2 border border-[#19c77a]/30 bg-[#19c77a]/5 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-[#19c77a] transition-all duration-300 hover:border-[#19c77a]/60 hover:bg-[#19c77a]/10"
+                >
+                  <FaPlus size={10} />
+                  Add Round
+                </button>
+
+              </div>
+
+
+              <div className="space-y-3">
+
+                {editRounds.map(
+                  (round, index) => (
+
+                    <div
+                      key={index}
+                      className="flex gap-3"
+                    >
+
+                      <div className="flex h-[50px] w-10 shrink-0 items-center justify-center border border-white/10 bg-[#050505] text-xs font-black text-gray-600">
+                        {String(index + 1).padStart(
+                          2,
+                          "0"
+                        )}
+                      </div>
+
+                      <input
+                        type="text"
+                        value={round}
+                        onChange={(e) =>
+                          handleEditRoundChange(
+                            index,
+                            e.target.value
+                          )
+                        }
+                        placeholder={`e.g. Round ${
+                          index + 1
+                        }`}
+                        className="min-w-0 flex-1 border border-white/10 bg-[#050505] px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 placeholder:text-gray-700 focus:border-[#19c77a]/60 focus:bg-white/[0.02]"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeEditRoundField(
+                            index
+                          )
+                        }
+                        disabled={
+                          editRounds.length === 1
+                        }
+                        className="flex h-[50px] w-[50px] shrink-0 items-center justify-center border border-white/10 bg-[#050505] text-gray-600 transition-all duration-300 hover:border-red-500/40 hover:bg-red-500/5 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-20"
+                        aria-label="Remove round"
+                      >
+                        <FaMinus size={12} />
+                      </button>
+
+                    </div>
+
+                  )
+                )}
+
+              </div>
+
+            </div>
+
+
+            {/* Status */}
+
+            <div className="border border-white/5 bg-white/[0.02] p-4">
+
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                Tournament Status
+              </p>
+
+              <p className="mt-2 text-xs leading-5 text-gray-500">
+                Leave Final Position blank while the
+                tournament is ongoing. Add the final
+                position once the tournament is complete.
+              </p>
+
+            </div>
+
+
+            {/* Save */}
+
+            <button
+              type="submit"
+              disabled={updatingTournament}
+              className="group flex w-full items-center justify-center gap-3 bg-[#d4af37] px-5 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:bg-[#e5c04a] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+
+              <FaSave />
+
+              {updatingTournament
+                ? "Saving Changes..."
+                : "Save Tournament Changes"}
+
+            </button>
+
+          </form>
+
+        </section>
+      )}
+
+
+      {/* =========================================
           CREATE TOURNAMENT
       ========================================= */}
 
@@ -447,9 +905,7 @@ function Admin() {
           </div>
 
 
-          {/* =====================================
-              ROUNDS
-          ===================================== */}
+          {/* Rounds */}
 
           <div>
 
@@ -484,6 +940,7 @@ function Admin() {
 
               {rounds.map(
                 (round, index) => (
+
                   <div
                     key={index}
                     className="flex gap-3"
@@ -528,6 +985,7 @@ function Admin() {
                     </button>
 
                   </div>
+
                 )
               )}
 
@@ -536,7 +994,7 @@ function Admin() {
           </div>
 
 
-          {/* Maps Information */}
+          {/* Maps */}
 
           <div className="border border-white/5 bg-white/[0.02] p-4">
 
@@ -569,24 +1027,6 @@ function Admin() {
             </p>
 
           </div>
-
-
-          {/* Error */}
-
-          {error && (
-            <div className="border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-
-
-          {/* Success */}
-
-          {success && (
-            <div className="border border-[#19c77a]/20 bg-[#19c77a]/5 px-4 py-3 text-sm text-[#19c77a]">
-              {success}
-            </div>
-          )}
 
 
           {/* Submit */}
@@ -667,107 +1107,155 @@ function Admin() {
           <div className="grid gap-4 md:grid-cols-2">
 
             {tournaments.map(
-              (tournament) => (
+              (tournament) => {
 
-                <div
-                  key={
-                    tournament.firestoreId
-                  }
-                  className="group border border-white/10 bg-[#080808] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-[#19c77a]/30 hover:bg-[#0a0a0a]"
-                >
+                const isEditing =
+                  editingTournamentId ===
+                  tournament.firestoreId;
 
-                  <div className="flex items-start justify-between gap-4">
+                return (
+                  <div
+                    key={
+                      tournament.firestoreId
+                    }
+                    className={`group border bg-[#080808] p-5 transition-all duration-300 ${
+                      isEditing
+                        ? "border-[#d4af37]/40"
+                        : "border-white/10 hover:-translate-y-1 hover:border-[#19c77a]/30 hover:bg-[#0a0a0a]"
+                    }`}
+                  >
 
-                    <div className="min-w-0">
+                    {/* Tournament Header */}
 
-                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-600">
-                        Tournament
-                      </p>
+                    <div className="flex items-start justify-between gap-4">
 
-                      <h3 className="mt-2 truncate text-lg font-black text-white">
-                        {tournament.name}
-                      </h3>
+                      <div className="min-w-0">
 
-                    </div>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-gray-600">
+                          Tournament
+                        </p>
 
+                        <h3 className="mt-2 truncate text-lg font-black text-white">
+                          {tournament.name}
+                        </h3>
 
-                    <div className="shrink-0 border border-[#d4af37]/20 bg-[#d4af37]/10 px-4 py-2 text-center">
-
-                      <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-[#d4af37]">
-                        {tournament.finalPosition
-                          ? "Finish"
-                          : "Status"}
-                      </p>
-
-                      <p className="mt-0.5 text-xl font-black text-[#d4af37]">
-                        {tournament.finalPosition
-                          ? `#${tournament.finalPosition}`
-                          : "ONGOING"}
-                      </p>
-
-                    </div>
-
-                  </div>
+                      </div>
 
 
-                  {/* Rounds */}
+                      <div className="shrink-0 border border-[#d4af37]/20 bg-[#d4af37]/10 px-4 py-2 text-center">
 
-                  {tournament.rounds?.length >
-                    0 && (
+                        <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-[#d4af37]">
+                          {tournament.finalPosition
+                            ? "Finish"
+                            : "Status"}
+                        </p>
 
-                    <div className="mt-5">
-
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600">
-                        Rounds
-                      </p>
-
-                      <div className="mt-2 flex flex-wrap gap-2">
-
-                        {tournament.rounds.map(
-                          (round, index) => (
-
-                            <span
-                              key={`${round}-${index}`}
-                              className="border border-white/10 bg-white/[0.02] px-2.5 py-1.5 text-[10px] font-semibold text-gray-500"
-                            >
-                              {round}
-                            </span>
-
-                          )
-                        )}
+                        <p className="mt-0.5 text-xl font-black text-[#d4af37]">
+                          {tournament.finalPosition
+                            ? `#${tournament.finalPosition}`
+                            : "ONGOING"}
+                        </p>
 
                       </div>
 
                     </div>
 
-                  )}
+
+                    {/* Rounds */}
+
+                    {tournament.rounds?.length >
+                      0 && (
+
+                      <div className="mt-5">
+
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                          Rounds
+                        </p>
+
+                        <div className="mt-2 flex flex-wrap gap-2">
+
+                          {tournament.rounds.map(
+                            (round, index) => (
+
+                              <span
+                                key={`${round}-${index}`}
+                                className="border border-white/10 bg-white/[0.02] px-2.5 py-1.5 text-[10px] font-semibold text-gray-500"
+                              >
+                                {round}
+                              </span>
+
+                            )
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    )}
 
 
-                  <button
-                    onClick={() =>
-                      navigate(
-                        `/tournaments/${encodeURIComponent(
-                          tournament.name
-                        )}`
-                      )
-                    }
-                    className="group/btn mt-5 flex w-full items-center justify-between border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-gray-400 transition-all duration-300 hover:border-[#19c77a]/40 hover:bg-[#19c77a]/5 hover:text-[#19c77a]"
-                  >
+                    {/* Edit + View */}
 
-                    <span>
-                      View Tournament
-                    </span>
+                    <div className="mt-5 grid gap-2 sm:grid-cols-2">
 
-                    <FaArrowRight
-                      size={11}
-                      className="transition-transform duration-300 group-hover/btn:translate-x-1"
-                    />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          isEditing
+                            ? handleCancelEdit()
+                            : handleStartEdit(
+                                tournament
+                              )
+                        }
+                        className={`flex items-center justify-center gap-2 border px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] transition-all duration-300 ${
+                          isEditing
+                            ? "border-red-500/30 bg-red-500/5 text-red-400 hover:border-red-500/50 hover:bg-red-500/10"
+                            : "border-[#d4af37]/25 bg-[#d4af37]/5 text-[#d4af37] hover:border-[#d4af37]/50 hover:bg-[#d4af37]/10"
+                        }`}
+                      >
 
-                  </button>
+                        {isEditing ? (
+                          <>
+                            <FaTimes size={11} />
+                            Cancel Edit
+                          </>
+                        ) : (
+                          <>
+                            <FaEdit size={11} />
+                            Edit Tournament
+                          </>
+                        )}
 
-                </div>
+                      </button>
 
-              )
+
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/tournaments/${encodeURIComponent(
+                              tournament.name
+                            )}`
+                          )
+                        }
+                        className="group/btn flex items-center justify-between border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] text-gray-400 transition-all duration-300 hover:border-[#19c77a]/40 hover:bg-[#19c77a]/5 hover:text-[#19c77a]"
+                      >
+
+                        <span>
+                          View Tournament
+                        </span>
+
+                        <FaArrowRight
+                          size={11}
+                          className="transition-transform duration-300 group-hover/btn:translate-x-1"
+                        />
+
+                      </button>
+
+                    </div>
+
+                  </div>
+                );
+              }
             )}
 
           </div>
